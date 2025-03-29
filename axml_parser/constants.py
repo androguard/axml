@@ -1,0 +1,1 @@
+# All constants (chunk types, flag values...)

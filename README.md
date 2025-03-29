@@ -4,20 +4,22 @@ Android AXML Parser
 
 ## In order for everyone to be on the same page and align on the goals of this project the following information is provided:
 
-#### High level structure
+#### High level suggested structure
 ~~~~
 axml_parser/
 ├── axml_parser/
-│   ├── __init__.py
-│   ├── parser.py         # Core logic
-│   ├── types.py          # AXML data types
-│   ├── utils.py          # Helpers
-│   └── exceptions.py     # Any custom exceptions
+│   ├── __init__.py       # Expose the public API (parse_axml, AXMLParser, AXMLPrinter)
+│   ├── constants.py      # All constants (chunk types, flag values...)
+│   ├── exceptions.py     # Custom exceptions (like ResParserError)
+│   ├── stringblock.py    # The StringBlock class and its helper functions (_decode8, _decode16...)
+│   ├── parser.py         # The AXMLParser class and related parsing functions
+│   ├── printer.py        # The AXMLPrinter class for converting parsed AXML into an ElementTree
+│   └── formatters.py     # Helper functions like format_value and any formatting utilities
 ├── tests/
-│   ├── test_parser.py
-├── setup.py
-├── pyproject.toml
-└── README.md
+│   └── test_parser.py    # Unit tests for each module
+├── setup.py              # Packaging file
+├── pyproject.toml        # Build configuration
+└── README.md             # Project description and usage instructions
 ~~~~
 
 ### Goals
