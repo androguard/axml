@@ -1,1 +1,0 @@
-# The StringBlock class and its helper functions (_decode8, _decode16...)

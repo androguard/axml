@@ -1,1 +1,0 @@
-# The AXMLParser class and related parsing functions
