@@ -2,9 +2,15 @@
 Android AXML Parser
 
 
-## In order for everyone to be on the same page and align on the goals of this project the following information is provided:
+## Current status
+ - Passing androguard tests for axml and arsc.
 
-#### High level suggested structure
+## Next steps to reach an "up to par" milestone
+ - pyproject.toml/setup.py
+ - workflows for testing/building
+ - ?
+
+#### Structure
 ~~~~
 axml_parser/
 ├── axml_parser/
@@ -12,11 +18,17 @@ axml_parser/
 │   ├── constants.py      # All constants (chunk types, flag values...)
 │   ├── exceptions.py     # Custom exceptions (like ResParserError)
 │   ├── stringblock.py    # The StringBlock class and its helper functions (_decode8, _decode16...)
-│   ├── parser.py         # The AXMLParser class and related parsing functions
+│   ├── parser_arsc.py    # The resources parser class and related parsing functions
+│   ├── parser_axml.py    # The AXMLParser class and related parsing functions
 │   ├── printer.py        # The AXMLPrinter class for converting parsed AXML into an ElementTree
 │   └── formatters.py     # Helper functions like format_value and any formatting utilities
+│   ├── resources
+│   │   ├── __init__.py
+│   │   ├── public.json
+│   │   ├── public.py
+│   │   └── public.xml
 ├── tests/
-│   └── test_parser.py    # Unit tests for each module
+│   └── test_*.py    # Unit tests for each module
 ├── setup.py              # Packaging file
 ├── pyproject.toml        # Build configuration
 └── README.md             # Project description and usage instructions
