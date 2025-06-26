@@ -1,19 +1,42 @@
-# axml-parser
-Android AXML Parser
 
+# Androguard's axml
+
+This is a library for handling the AXML file format.  "AXML" is the informal
+common name for the binary XML data format used in Android app files.  The
+Android Open Source Project does not seem to have named the format, other than
+referring to is as "binary XML" or "compiled XML".  So AXML stands for Android
+XML. The file format is based on compiling XML source into a binary format based
+on [protobuf]().
+
+This "[app manifest](https://developer.android.com/guide/topics/manifest/manifest-element)"
+defines the essential data points that every app must have, like Package Name
+and Version Code, and includes lots of other metadata that describe the
+app. Every Android app file (APK) must include
+[`AndroidManifest.xml`](https://developer.android.com/guide/topics/manifest/manifest-intro),
+which in the APK is the compiled binary AXML format, not XML, despite the file
+extension.  The source code files for the binary app manifest file are also
+called `AndroidManifest.xml`, but they are actually XML.  There can be
+[multiple](https://developer.android.com/build/manage-manifests) source files,
+but there is only ever one single compiled binary `AndroidManifest.xml` that is
+valid in the APK.
+
+https://developer.android.com/guide/topics/manifest/manifest-intro#reference
 
 ## Current status
+
  - Passing androguard tests for axml and arsc.
 
 ## Next steps to reach an "up to par" milestone
+
  - pyproject.toml/setup.py
  - workflows for testing/building
  - ?
 
 #### Structure
+
 ~~~~
-axml_parser/
-├── axml_parser/
+axml/
+├── axml/
 │   ├── __init__.py       # Expose the public API (parse_axml, AXMLParser, AXMLPrinter)
 │   ├── constants.py      # All constants (chunk types, flag values...)
 │   ├── exceptions.py     # Custom exceptions (like ResParserError)
@@ -35,6 +58,7 @@ axml_parser/
 ~~~~
 
 ### Goals
+
  - Write tests early approach, so we can immediately verify breaking changes.
  - Expose a clean public API
  - Standalone capabilities for axml parsing
@@ -42,4 +66,20 @@ axml_parser/
 
 
 ### Coding style
+
  - Follow [PEP 257](https://peps.python.org/pep-0257/) guidelines using the reStructuredText (reST) format for all docstrings.
+
+## AXML binary format
+
+Some references about the binary AXML format:
+
+* [_aapt2_](https://developer.android.com/tools/aapt2) compiles XML to protobuf-based AXML
+* [_aapt2_ source code](https://android.googlesource.com/platform/frameworks/base/+/master/tools/aapt2)
+* [_aapt_ source code](https://android.googlesource.com/platform/frameworks/base/+/master/tools/aapt)
+* The binary format for `AndroidManifest.xml` is defined in [`ApkInfo.proto`](https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/tools/aapt2/ApkInfo.proto).
+
+![Android binary XML](https://raw.githubusercontent.com/senswrong/AndroidBinaryXml/main/AndroidBinaryXml.png)
+
+<!-- back up URL in case the one above goes away
+![Android binary XML](https://github.com/user-attachments/assets/6439a13a-5a50-4f32-b106-c70c9fb9acf1)
+-->
