@@ -3,11 +3,11 @@ import logging
 from struct import unpack
 from typing import Union
 
-from android_resources.constants import *
-from android_resources.exceptions import ResParserError
-from android_resources.parser_arsc import ARSCHeader
-from android_resources.resources import public
-from android_resources.stringblock import StringBlock
+from axml.constants import *
+from axml.exceptions import ResParserError
+from axml.parser_arsc import ARSCHeader
+from axml.resources import public
+from axml.stringblock import StringBlock
 
 
 class AXMLParser:

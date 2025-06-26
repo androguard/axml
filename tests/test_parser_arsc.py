@@ -5,7 +5,7 @@ import unittest
 
 from lxml import etree
 
-from android_resources.parser_arsc import ARSCResTableConfig, ARSCParser
+from axml.parser_arsc import ARSCResTableConfig, ARSCParser
 
 test_dir = os.path.dirname(os.path.abspath(__file__))
 

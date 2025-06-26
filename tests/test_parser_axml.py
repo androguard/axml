@@ -3,10 +3,10 @@ import os
 import unittest
 from xml.dom import minidom
 
-from android_resources.exceptions import ResParserError
-from android_resources.parser_arsc import ARSCHeader
-from android_resources.parser_axml import AXMLParser
-from android_resources.printer import AXMLPrinter
+from axml.exceptions import ResParserError
+from axml.parser_arsc import ARSCHeader
+from axml.parser_axml import AXMLParser
+from axml.printer import AXMLPrinter
 
 test_dir = os.path.dirname(os.path.abspath(__file__))
 

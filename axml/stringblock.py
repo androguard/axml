@@ -4,8 +4,8 @@ import logging
 from struct import unpack
 from typing import BinaryIO
 
-from android_resources.constants import UTF8_FLAG
-from android_resources.exceptions import ResParserError
+from axml.constants import UTF8_FLAG
+from axml.exceptions import ResParserError
 
 
 class StringBlock:

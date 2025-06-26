@@ -8,10 +8,10 @@ from struct import unpack
 from typing import BinaryIO, Union
 from xml.sax.saxutils import escape
 
-from android_resources.constants import *
-from android_resources.exceptions import ResParserError
-from android_resources.formatters import format_value, complexToFloat
-from android_resources.stringblock import StringBlock
+from axml.constants import *
+from axml.exceptions import ResParserError
+from axml.formatters import format_value, complexToFloat
+from axml.stringblock import StringBlock
 
 
 
@@ -777,14 +777,14 @@ class ARSCParser:
 
         def __init__(
             self,
-            android_resources: ARSCParser,
+            axml: ARSCParser,
             config: Union[ARSCResTableConfig, None] = None,
         ) -> None:
             """
-            :param ARSCParser android_resources: A resource parser
+            :param ARSCParser axml: A resource parser
             :param ARSCResTableConfig config: The desired configuration or None to resolve all.
             """
-            self.resources = android_resources
+            self.resources = axml
             self.wanted_config = config
 
         def resolve(self, res_id: int) -> list[tuple[ARSCResTableConfig, str]]:

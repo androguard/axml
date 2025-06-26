@@ -4,9 +4,9 @@ import re
 
 from lxml import etree
 
-from android_resources.constants import START_TAG, END_TAG, TEXT, END_DOCUMENT
-from android_resources.formatters import format_value
-from android_resources.parser_axml import AXMLParser
+from axml.constants import START_TAG, END_TAG, TEXT, END_DOCUMENT
+from axml.formatters import format_value
+from axml.parser_axml import AXMLParser
 
 
 class AXMLPrinter:
