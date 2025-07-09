@@ -30,7 +30,6 @@ classifiers = [
   "Programming Language :: Python :: 3.13",
   "Topic :: Security",
   "Topic :: Software Development",
-  "Topic :: Software Development :: Android",
   "Topic :: Utilities",
 ]
 
