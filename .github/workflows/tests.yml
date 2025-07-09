@@ -1,0 +1,68 @@
+name: Run Tests on Ubuntu
+
+on:
+  push:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  ubuntu_3_13:
+    name: Python 3.13 with pip
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.13'
+
+    - name: Install Dependencies
+      run: python3 -m pip install .
+
+    - name: Run unittest tests
+      run: python3 -m unittest discover -s tests
+
+    - name: Build with setuptools
+      run: |
+        python3 -m pip install build
+        python3 -m build
+
+  ubuntu_lts:
+    name: Ubuntu/LTS packages
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install --no-install-recommends python-is-python3 python3-build python3-lxml python3-setuptools
+
+    - name: Run unittest tests
+      run: python3 -m unittest discover -s tests
+
+    - name: Build with setuptools
+      run: |
+        python3 -m build
+
+  ubuntu_22_04:
+    name: Ubuntu/22.04 packages
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install --no-install-recommends python3-lxml python3-setuptools
+
+    - name: Run unittest tests
+      run: python3 -m unittest discover -s tests
