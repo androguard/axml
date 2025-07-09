@@ -2,13 +2,22 @@
 # Androguard's axml
 
 This is a library for handling the AXML file format.  "AXML" is the informal
-common name for the binary XML data format used in Android app files.  The
-Android Open Source Project does not seem to have named the format, other than
-referring to is as "binary XML" or "compiled XML".  So AXML stands for Android
-XML. The file format is based on compiling XML source into a binary format based
-on [protobuf]().
+common name for the compiled binary XML data format used in Android app files.
+The Android Open Source Project does not seem to have named the format, other
+than referring to is as "binary XML" or "compiled XML".  So AXML stands for
+Android XML. The file format is based on compiling XML source into a binary
+format based on [protobuf](). There are a number of different Android XML file
+types that are compiled to AXML, these are generically known as [Android
+Resources](https://developer.android.com/guide/topics/resources/available-resources).
+All of these files are included in the APK's ZIP package with the file extension
+`.xml` even though they are actually AXML and not XML.
 
-This "[app manifest](https://developer.android.com/guide/topics/manifest/manifest-element)"
+Some specific data files, like String Resources and Style Resources, are instead
+compiled into a single file `resources.arsc` in its own data format, known as
+ASRC.  AXML files often refer to values that are in `resources.arsc`.
+
+The entry point for an app is the "[app
+manifest](https://developer.android.com/guide/topics/manifest/manifest-element)"
 defines the essential data points that every app must have, like Package Name
 and Version Code, and includes lots of other metadata that describe the
 app. Every Android app file (APK) must include
