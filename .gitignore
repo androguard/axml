@@ -1,6 +1,7 @@
 __pycache__/
 *.pyc
 *.pyo
+*.egg-info/
 
 # mkdocs build artifacts
 docs/build
