@@ -9,7 +9,7 @@ authors = [
   {name = "desnos", email = "desnos@t0t0.fr"},
   {name = "eighthave", email = "hans@eds.org"},
 ]
-version = "0.0.1"
+version = "0.0.1a0"
 license = {file = "LICENSE"}
 readme = "README.md"
 requires-python = ">=3.9"
