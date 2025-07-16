@@ -1,8 +1,9 @@
 import binascii
-import logging
 import re
 
 from lxml import etree
+
+from .helper.logging import LOGGER
 
 from axml.constants import START_TAG, END_TAG, TEXT, END_DOCUMENT
 from axml.formatters import format_value
@@ -20,8 +21,8 @@ class AXMLPrinter:
     __charrange = None
     __replacement = None
 
-    def __init__(self, raw_buff: bytes) -> bytes:
-        logging.debug("AXMLPrinter")
+    def __init__(self, raw_buff: bytes):
+        LOGGER.debug("AXMLPrinter")
 
         self.axml = AXMLParser(raw_buff)
 
@@ -31,11 +32,11 @@ class AXMLPrinter:
 
         while self.axml.is_valid():
             _type = next(self.axml)
-            logging.debug("DEBUG ARSC TYPE {}".format(_type))
+            LOGGER.debug("DEBUG ARSC TYPE {}".format(_type))
 
             if _type == START_TAG:
                 if not self.axml.name:  # Check if the name is empty
-                    logging.debug("Empty tag name, skipping to next element")
+                    LOGGER.debug("Empty tag name, skipping to next element")
                     continue  # Skip this iteration
                 uri = self._print_namespace(self.axml.namespace)
                 uri, name = self._fix_name(uri, self.axml.name)
@@ -44,7 +45,7 @@ class AXMLPrinter:
                 comment = self.axml.comment
                 if comment:
                     if self.root is None:
-                        logging.warning(
+                        LOGGER.warning(
                             "Can not attach comment with content '{}' without root!".format(
                                 comment
                             )
@@ -52,7 +53,7 @@ class AXMLPrinter:
                     else:
                         cur[-1].append(etree.Comment(comment))
 
-                logging.debug(
+                LOGGER.debug(
                     "START_TAG: {} (line={})".format(
                         tag, self.axml.m_lineNumber
                     )
@@ -61,7 +62,7 @@ class AXMLPrinter:
                 try:
                     elem = etree.Element(tag, nsmap=self.axml.nsmap)
                 except ValueError as e:
-                    logging.error(e)
+                    LOGGER.error(e)
                     # nsmap= {'<!--': 'http://schemas.android.com/apk/res/android'} | pull/1056
                     if 'Invalid namespace prefix' in str(e):
                         corrected_nsmap = self.clean_and_replace_nsmap(
@@ -80,13 +81,13 @@ class AXMLPrinter:
                     )
                     value = self._fix_value(self._get_attribute_value(i))
 
-                    logging.debug(
+                    LOGGER.debug(
                         "found an attribute: {}{}='{}'".format(
                             uri, name, value.encode("utf-8")
                         )
                     )
                     if "{}{}".format(uri, name) in elem.attrib:
-                        logging.warning(
+                        LOGGER.warning(
                             "Duplicate attribute '{}{}'! Will overwrite!".format(
                                 uri, name
                             )
@@ -98,7 +99,7 @@ class AXMLPrinter:
                 else:
                     if not cur:
                         # looks like we lost the root?
-                        logging.error(
+                        LOGGER.error(
                             "No more elements available to attach to! Is the XML malformed?"
                         )
                         break
@@ -107,12 +108,12 @@ class AXMLPrinter:
 
             if _type == END_TAG:
                 if not cur:
-                    logging.warning(
+                    LOGGER.warning(
                         "Too many END_TAG! No more elements available to attach to!"
                     )
                 else:
                     if not self.axml.name:  # Check if the name is empty
-                        logging.debug(
+                        LOGGER.debug(
                             "Empty tag name at END_TAG, skipping to next element"
                         )
                         continue
@@ -121,19 +122,19 @@ class AXMLPrinter:
                 uri = self._print_namespace(self.axml.namespace)
                 tag = "{}{}".format(uri, name)
                 if cur[-1].tag != tag:
-                    logging.warning(
+                    LOGGER.warning(
                         "Closing tag '{}' does not match current stack! At line number: {}. Is the XML malformed?".format(
                             self.axml.name, self.axml.m_lineNumber
                         )
                     )
                 cur.pop()
             if _type == TEXT:
-                logging.debug("TEXT for {}".format(cur[-1]))
+                LOGGER.debug("TEXT for {}".format(cur[-1]))
                 cur[-1].text = self.axml.text
             if _type == END_DOCUMENT:
                 # Check if all namespace mappings are closed
                 if len(self.axml.namespaces) > 0:
-                    logging.warning(
+                    LOGGER.warning(
                         "Not all namespace mappings were closed! Malformed AXML?"
                     )
                 break
@@ -231,7 +232,7 @@ class AXMLPrinter:
         :return: a fixed version of prefix and name
         """
         if not name[0].isalpha() and name[0] != "_":
-            logging.warning(
+            LOGGER.warning(
                 "Invalid start for name '{}'. "
                 "XML name must start with a letter.".format(name)
             )
@@ -243,7 +244,7 @@ class AXMLPrinter:
             and 'android' in self.axml.nsmap
         ):
             # Seems be a common thing...
-            logging.info(
+            LOGGER.info(
                 "Name '{}' starts with 'android:' prefix but 'android' is a known prefix. Replacing prefix.".format(
                     name
                 )
@@ -256,7 +257,7 @@ class AXMLPrinter:
             self.packerwarning = True
             embedded_prefix, new_name = name.split(":", 1)
             if embedded_prefix in self.axml.nsmap:
-                logging.info(
+                LOGGER.info(
                     "Prefix '{}' is in namespace mapping, assume that it is a prefix."
                 )
                 prefix = self._print_namespace(
@@ -265,14 +266,14 @@ class AXMLPrinter:
                 name = new_name
             else:
                 # Print out an extra warning
-                logging.warning(
+                LOGGER.warning(
                     "Confused: name contains a unknown namespace prefix: '{}'. "
                     "This is either a broken AXML file or some attempt to break stuff.".format(
                         name
                     )
                 )
         if not re.match(r"^[a-zA-Z0-9._-]*$", name):
-            logging.warning(
+            LOGGER.warning(
                 "Name '{}' contains invalid characters!".format(name)
             )
             self.packerwarning = True
@@ -302,7 +303,7 @@ class AXMLPrinter:
         # Reading string until \x00. This is the same as aapt does.
         if "\x00" in value:
             self.packerwarning = True
-            logging.warning(
+            LOGGER.warning(
                 "Null byte found in attribute value at position {}: "
                 "Value(hex): '{}'".format(
                     value.find("\x00"), binascii.hexlify(value.encode("utf-8"))
@@ -311,7 +312,7 @@ class AXMLPrinter:
             value = value[: value.find("\x00")]
 
         if not self.__charrange.match(value):
-            logging.warning(
+            LOGGER.warning(
                 "Invalid character in value found. Replacing with '_'."
             )
             self.packerwarning = True

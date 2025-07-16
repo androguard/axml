@@ -1,7 +1,8 @@
 import io
-import logging
 from struct import unpack
 from typing import Union
+
+from .helper.logging import LOGGER
 
 from axml.constants import *
 from axml.exceptions import ResParserError
@@ -35,7 +36,7 @@ class AXMLParser:
     """
 
     def __init__(self, raw_buff: bytes) -> None:
-        logging.debug("AXMLParser")
+        LOGGER.debug("AXMLParser")
 
         self._reset()
 
@@ -47,7 +48,7 @@ class AXMLParser:
 
         # Minimum is a single ARSCHeader, which would be a strange edge case...
         if self.buff_size < 8:
-            logging.error(
+            LOGGER.error(
                 "Filesize is too small to be a valid AXML file! Filesize: {}".format(
                     self.buff_size
                 )
@@ -58,7 +59,7 @@ class AXMLParser:
         # This would be even stranger, if an AXML file is larger than 4GB...
         # But this is not possible as the maximum chunk size is a unsigned 4 byte int.
         if self.buff_size > 0xFFFFFFFF:
-            logging.error(
+            LOGGER.error(
                 "Filesize is too large to be a valid AXML file! Filesize: {}".format(
                     self.buff_size
                 )
@@ -68,9 +69,9 @@ class AXMLParser:
 
         try:
             axml_header = ARSCHeader(self.buff)
-            logging.debug("FIRST HEADER {}".format(axml_header))
+            LOGGER.debug("FIRST HEADER {}".format(axml_header))
         except ResParserError as e:
-            logging.error("Error parsing first resource header: %s", e)
+            LOGGER.error("Error parsing first resource header: %s", e)
             self._valid = False
             return
 
@@ -79,12 +80,12 @@ class AXMLParser:
         if axml_header.header_size == 28024:
             # Can be a common error: the file is not an AXML but a plain XML
             # The file will then usually start with '<?xm' / '3C 3F 78 6D'
-            logging.warning(
+            LOGGER.warning(
                 "Header size is 28024! Are you trying to parse a plain XML file?"
             )
 
         if axml_header.header_size != 8:
-            logging.error(
+            LOGGER.error(
                 "This does not look like an AXML file. header size does not equal 8! header size = {}".format(
                     axml_header.header_size
                 )
@@ -93,7 +94,7 @@ class AXMLParser:
             return
 
         if self.filesize > self.buff_size:
-            logging.error(
+            LOGGER.error(
                 "This does not look like an AXML file. Declared filesize does not match real size: {} vs {}".format(
                     self.filesize, self.buff_size
                 )
@@ -104,7 +105,7 @@ class AXMLParser:
         if self.filesize < self.buff_size:
             # The file can still be parsed up to the point where the chunk should end.
             self.axml_tampered = True
-            logging.warning(
+            LOGGER.warning(
                 "Declared filesize ({}) is smaller than total file size ({}). "
                 "Was something appended to the file? Trying to parse it anyways.".format(
                     self.filesize, self.buff_size
@@ -115,7 +116,7 @@ class AXMLParser:
         # set correctly
         if axml_header.type != RES_XML_TYPE:
             self.axml_tampered = True
-            logging.warning(
+            LOGGER.warning(
                 "AXML file has an unusual resource type! "
                 "Malware likes to to such stuff to anti androguard! "
                 "But we try to parse it anyways. Resource Type: 0x{:04x}".format(
@@ -126,16 +127,16 @@ class AXMLParser:
         # Now we parse the STRING POOL
         try:
             header = ARSCHeader(self.buff, expected_type=RES_STRING_POOL_TYPE)
-            logging.debug("STRING_POOL {}".format(header))
+            LOGGER.debug("STRING_POOL {}".format(header))
         except ResParserError as e:
-            logging.error(
+            LOGGER.error(
                 "Error parsing resource header of string pool: {}".format(e)
             )
             self._valid = False
             return
 
         if header.header_size != 0x1C:
-            logging.error(
+            LOGGER.error(
                 "This does not look like an AXML file. String chunk header size does not equal 28! header size = {}".format(
                     header.header_size
                 )
@@ -161,7 +162,7 @@ class AXMLParser:
 
         :returns: `True` if the `AXMLPrinter` finished parsing, or `False` if an error occurred
         """
-        logging.debug(self._valid)
+        LOGGER.debug(self._valid)
         return self._valid
 
     def _reset(self):
@@ -179,7 +180,7 @@ class AXMLParser:
         return self.m_event
 
     def _do_next(self):
-        logging.debug("M_EVENT {}".format(self.m_event))
+        LOGGER.debug("M_EVENT {}".format(self.m_event))
 
         if self.m_event == END_DOCUMENT:
             return
@@ -195,20 +196,20 @@ class AXMLParser:
             try:
                 possible_types = {256, 257, 258, 259, 260, 384}
                 h = ARSCHeader(self.buff, possible_types=possible_types)
-                logging.debug("NEXT HEADER {}".format(h))
+                LOGGER.debug("NEXT HEADER {}".format(h))
             except ResParserError as e:
-                logging.error("Error parsing resource header: {}".format(e))
+                LOGGER.error("Error parsing resource header: {}".format(e))
                 self._valid = False
                 return
 
             # Special chunk: Resource Map. This chunk might be contained inside
             # the file, after the string pool.
             if h.type == RES_XML_RESOURCE_MAP_TYPE:
-                logging.debug("AXML contains a RESOURCE MAP")
+                LOGGER.debug("AXML contains a RESOURCE MAP")
                 # Check size: < 8 bytes mean that the chunk is not complete
                 # Should be aligned to 4 bytes.
                 if h.size < 8 or (h.size % 4) != 0:
-                    logging.error(
+                    LOGGER.error(
                         "Invalid chunk size in chunk XML_RESOURCE_MAP"
                     )
                     self._valid = False
@@ -230,7 +231,7 @@ class AXMLParser:
                 # h.size is the size of the whole chunk including the header.
                 # We read already 8 bytes of the header, thus we need to
                 # subtract them.
-                logging.error(
+                LOGGER.error(
                     "Not a XML resource chunk type: 0x{:04x}. Skipping {} bytes".format(
                         h.type, h.size
                     )
@@ -240,7 +241,7 @@ class AXMLParser:
 
             # Check that we read a correct header
             if h.header_size != 0x10:
-                logging.error(
+                LOGGER.error(
                     "XML Resource Type Chunk header size does not match 16! "
                     "At chunk type 0x{:04x}, declared header size=0x{:04x}, chunk size=0x{:04x}".format(
                         h.type, h.header_size, h.size
@@ -259,7 +260,7 @@ class AXMLParser:
                 RES_XML_START_NAMESPACE_TYPE,
                 RES_XML_END_NAMESPACE_TYPE,
             ]:
-                logging.warning(
+                LOGGER.warning(
                     "Unhandled Comment at namespace chunk: '{}'".format(
                         self.sb[self.m_comment_index]
                     )
@@ -272,20 +273,20 @@ class AXMLParser:
                 s_prefix = self.sb[prefix]
                 s_uri = self.sb[uri]
 
-                logging.debug(
+                LOGGER.debug(
                     "Start of Namespace mapping: prefix {}: '{}' --> uri {}: '{}'".format(
                         prefix, s_prefix, uri, s_uri
                     )
                 )
 
                 if s_uri == '':
-                    logging.warning(
+                    LOGGER.warning(
                         "Namespace prefix '{}' resolves to empty URI. "
                         "This might be a packer.".format(s_prefix)
                     )
 
                 if (prefix, uri) in self.namespaces:
-                    logging.debug(
+                    LOGGER.debug(
                         "Namespace mapping ({}, {}) already seen! "
                         "This is usually not a problem but could indicate packers or broken AXML compilers.".format(
                             prefix, uri
@@ -306,7 +307,7 @@ class AXMLParser:
                 if (prefix, uri) in self.namespaces:
                     self.namespaces.remove((prefix, uri))
                 else:
-                    logging.warning(
+                    LOGGER.warning(
                         "Reached a NAMESPACE_END without having the namespace stored before? "
                         "Prefix ID: {}, URI ID: {}".format(prefix, uri)
                     )
@@ -393,7 +394,7 @@ class AXMLParser:
                 # For now, we ingore these values
                 size, res0, dataType, data = unpack("<HBBL", self.buff.read(8))
 
-                logging.debug(
+                LOGGER.debug(
                     "found a CDATA Chunk: "
                     "index={: 6d}, size={: 4d}, res0={: 4d}, dataType={: 4d}, data={: 4d}".format(
                         self.m_name, size, res0, dataType, data
@@ -404,7 +405,7 @@ class AXMLParser:
                 break
 
             # Still here? Looks like we read an unknown XML header, try to skip it...
-            logging.warning(
+            LOGGER.warning(
                 "Unknown XML Chunk: 0x{:04x}, skipping {} bytes.".format(
                     h.type, h.size
                 )
@@ -524,11 +525,11 @@ class AXMLParser:
         Return the start inside the m_attributes array for a given attribute
         """
         if self.m_event != START_TAG:
-            logging.warning("Current event is not START_TAG.")
+            LOGGER.warning("Current event is not START_TAG.")
 
         offset = index * ATTRIBUTE_LENGTH
         if offset >= len(self.m_attributes):
-            logging.warning("Invalid attribute index")
+            LOGGER.warning("Invalid attribute index")
 
         return offset
 
@@ -550,7 +551,7 @@ class AXMLParser:
 
         :returns: the namespace URI numeric id
         """
-        logging.debug(index)
+        LOGGER.debug(index)
 
         offset = self._get_attribute_offset(index)
         uri = self.m_attributes[offset + ATTRIBUTE_IX_NAMESPACE_URI]
@@ -563,7 +564,7 @@ class AXMLParser:
 
         :returns: the attribute uri, or empty string if no namespace
         """
-        logging.debug(index)
+        LOGGER.debug(index)
 
         uri = self.getAttributeUri(index)
 
@@ -579,11 +580,12 @@ class AXMLParser:
 
         :returns: the attribute name
         """
-        logging.debug(index)
+        LOGGER.debug(index)
         offset = self._get_attribute_offset(index)
         name = self.m_attributes[offset + ATTRIBUTE_IX_NAME]
 
         res = self.sb[name]
+        attr = None
         # If the result is a (null) string, we need to look it up.
         if name < len(self.m_resourceIDs):
             attr = self.m_resourceIDs[name]
@@ -597,7 +599,8 @@ class AXMLParser:
         if not res or res == ":":
             # Attach the HEX Number, so for multiple missing attributes we do not run
             # into problems.
-            res = 'android:UNKNOWN_SYSTEM_ATTRIBUTE_{:08x}'.format(attr)
+            if attr:
+                res = 'android:UNKNOWN_SYSTEM_ATTRIBUTE_{:08x}'.format(attr)
         return res
 
     def getAttributeValueType(self, index: int):
@@ -606,7 +609,7 @@ class AXMLParser:
 
         :param index: index of the attribute
         """
-        logging.debug(index)
+        LOGGER.debug(index)
 
         offset = self._get_attribute_offset(index)
         return self.m_attributes[offset + ATTRIBUTE_IX_VALUE_TYPE]
@@ -617,7 +620,7 @@ class AXMLParser:
 
         :param index: index of the attribute
         """
-        logging.debug(index)
+        LOGGER.debug(index)
 
         offset = self._get_attribute_offset(index)
         return self.m_attributes[offset + ATTRIBUTE_IX_VALUE_DATA]
@@ -631,7 +634,7 @@ class AXMLParser:
         :param index: index of the attribute
         :returns: the string
         """
-        logging.debug(index)
+        LOGGER.debug(index)
 
         offset = self._get_attribute_offset(index)
         valueType = self.m_attributes[offset + ATTRIBUTE_IX_VALUE_TYPE]

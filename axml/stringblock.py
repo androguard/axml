@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-import logging
 from struct import unpack
 from typing import BinaryIO
+
+from .helper.logging import LOGGER
 
 from axml.constants import UTF8_FLAG
 from axml.exceptions import ResParserError
@@ -50,7 +51,7 @@ class StringBlock:
 
         # Check if they supplied a stylesOffset even if the count is 0:
         if self.styleCount == 0 and self.stylesOffset > 0:
-            logging.info(
+            LOGGER.info(
                 "Styles Offset given, but styleCount is zero. "
                 "This is not a problem but could indicate packers."
             )
@@ -79,7 +80,7 @@ class StringBlock:
             size = self.stylesOffset - self.stringsOffset
 
         if (size % 4) != 0:
-            logging.warning("Size of strings is not aligned by four bytes.")
+            LOGGER.warning("Size of strings is not aligned by four bytes.")
 
         self.m_charbuff = buff.read(size)
 
@@ -87,7 +88,7 @@ class StringBlock:
             size = self.header.size - self.stylesOffset
 
             if (size % 4) != 0:
-                logging.warning("Size of styles is not aligned by four bytes.")
+                LOGGER.warning("Size of styles is not aligned by four bytes.")
 
             for i in range(0, size // 4):
                 self.m_styles.append(unpack('<I', buff.read(4))[0])
@@ -175,7 +176,7 @@ class StringBlock:
         # b) non-null terminated strings which should be rejected
         # platform/frameworks/base/libs/androidfw/ResourceTypes.cpp#789
         if len(self.m_charbuff) < (offset + encoded_bytes):
-            logging.warning(
+            LOGGER.warning(
                 f"String size: {offset + encoded_bytes} is exceeding string pool size. Returning empty string."
             )
             return ""
@@ -210,7 +211,7 @@ class StringBlock:
         # b) non-null terminated strings which should be rejected
         # platform/frameworks/base/libs/androidfw/ResourceTypes.cpp#789
         if len(self.m_charbuff) < (offset + encoded_bytes):
-            logging.warning(
+            LOGGER.warning(
                 f"String size: {offset + encoded_bytes} is exceeding string pool size. Returning empty string."
             )
             return ""
@@ -246,7 +247,7 @@ class StringBlock:
         """
         string = data.decode(encoding, 'replace')
         if len(string) != str_len:
-            logging.warning("invalid decoded string length")
+            LOGGER.warning("invalid decoded string length")
         return string
 
     def _decode_length(self, offset: int, sizeof_char: int) -> tuple[int, int]:

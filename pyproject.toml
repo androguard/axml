@@ -6,32 +6,36 @@ build-backend = "setuptools.build_meta"
 name = "axml"
 description = "Python library for the Android binary XML (AXML) file format."
 authors = [
-  {name = "desnos", email = "desnos@t0t0.fr"},
-  {name = "eighthave", email = "hans@eds.org"},
+    { name = "anthony", email = "ping@42.bzh" },
+    { name = "eighthave", email = "hans@eds.org" },
 ]
-version = "0.0.1a0"
-license = {file = "LICENSE"}
+version = "0.0.1a1"
+license = { file = "LICENSE" }
 readme = "README.md"
+
 requires-python = ">=3.9"
-dependencies = [
-  "lxml>=4.3.0",
-]
+dependencies = ["rich>=14.0.0", "lxml>=4.3.0"]
+
 keywords = ["android", "xml", "axml", "parser"]
 classifiers = [
-  "Development Status :: 5 - Production/Stable",
-  "License :: OSI Approved :: Apache Software License",
-  "Programming Language :: Python",
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12",
-  "Programming Language :: Python :: 3.13",
-  "Topic :: Security",
-  "Topic :: Software Development",
-  "Topic :: Utilities",
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security",
+    "Topic :: Software Development",
+    "Topic :: Utilities",
 ]
+
+[project.scripts]
+axml = "axml.main:app_axml"
+arsc = "axml.main:app_arsc"
 
 [project.urls]
 Homepage = "https://github.com/androguard/axml"

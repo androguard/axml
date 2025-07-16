@@ -2,18 +2,17 @@ from __future__ import annotations
 
 import collections
 import io
-import logging
 from collections import defaultdict
 from struct import unpack
 from typing import BinaryIO, Union
 from xml.sax.saxutils import escape
 
+from .helper.logging import LOGGER
+
 from axml.constants import *
 from axml.exceptions import ResParserError
 from axml.formatters import format_value, complexToFloat
 from axml.stringblock import StringBlock
-
-
 
 
 class ARSCParser:
@@ -58,7 +57,7 @@ class ARSCParser:
 
         # More sanity checks...
         if self.header.header_size != 12:
-            logging.warning(
+            LOGGER.warning(
                 "The ResTable_header has an unexpected header size! Expected 12 bytes, got {}.".format(
                     self.header.header_size
                 )
@@ -72,7 +71,7 @@ class ARSCParser:
             )
 
         if self.header.size < self.buff_size:
-            logging.warning(
+            LOGGER.warning(
                 "The Resource file seems to have data appended to it. Filesize: {}, declared size: {}".format(
                     self.buff_size, self.header.size
                 )
@@ -83,11 +82,11 @@ class ARSCParser:
 
         # Even more sanity checks...
         if self.packageCount < 1:
-            logging.warning(
+            LOGGER.warning(
                 "The number of packages is smaller than one. There should be at least one package!"
             )
 
-        logging.debug(
+        LOGGER.debug(
             "Parsed ResTable_header with {} package(s) inside.".format(
                 self.packageCount
             )
@@ -103,7 +102,7 @@ class ARSCParser:
 
             if res_header.end > self.header.end:
                 # this inner chunk crosses the boundary of the table chunk
-                logging.warning(
+                LOGGER.warning(
                     "Invalid chunk found! It is larger than the outer chunk: %s",
                     res_header,
                 )
@@ -112,12 +111,12 @@ class ARSCParser:
             if res_header.type == RES_STRING_POOL_TYPE:
                 # There should be only one StringPool per resource table.
                 if self.stringpool_main:
-                    logging.warning(
+                    LOGGER.warning(
                         "Already found a ResStringPool_header, but there should be only one! Will not parse the Pool again."
                     )
                 else:
                     self.stringpool_main = StringBlock(self.buff, res_header)
-                    logging.debug(
+                    LOGGER.debug(
                         "Found the main string pool: %s", self.stringpool_main
                     )
 
@@ -161,7 +160,7 @@ class ARSCParser:
                     mTableStrings,
                     mKeyStrings,
                 )
-                logging.debug("Constructed a PackageContext: %s", pc)
+                LOGGER.debug("Constructed a PackageContext: %s", pc)
 
                 # skip to the first header in this table package chunk
                 # FIXME is this correct? We have already read the first two sections!
@@ -178,26 +177,26 @@ class ARSCParser:
 
                 if next_idx != self.buff.tell():
                     # If this happens, we have a testfile ;)
-                    logging.error("This looks like an odd resources.arsc file!")
-                    logging.error(
+                    LOGGER.error("This looks like an odd resources.arsc file!")
+                    LOGGER.error(
                         "Please report this error including the file you have parsed!"
                     )
-                    logging.error(
+                    LOGGER.error(
                         "next_idx = {}, current buffer position = {}".format(
                             next_idx, self.buff.tell()
                         )
                     )
-                    logging.error(
+                    LOGGER.error(
                         "Please open a issue at https://github.com/androguard/androguard/issues"
                     )
-                    logging.error("Thank you!")
+                    LOGGER.error("Thank you!")
 
                 self.buff.seek(next_idx)
 
                 # Read all other headers
                 while self.buff.tell() <= res_header.end - ARSCHeader.SIZE:
                     pkg_chunk_header = ARSCHeader(self.buff)
-                    logging.debug("Found a header: {}".format(pkg_chunk_header))
+                    LOGGER.debug("Found a header: {}".format(pkg_chunk_header))
                     if (
                         pkg_chunk_header.start + pkg_chunk_header.size
                         > res_header.end
@@ -225,7 +224,7 @@ class ARSCParser:
                             a_res_type.config
                         )
 
-                        logging.debug("Config: {}".format(a_res_type.config))
+                        LOGGER.debug("Config: {}".format(a_res_type.config))
 
                         entries = []
                         FLAG_OFFSET16 = 0x02
@@ -266,7 +265,7 @@ class ARSCParser:
                         base_offset = self.buff.tell()
                         if base_offset + ((4 - (base_offset % 4)) % 4) != expected_entries_start:
                             # FIXME: seems like I am missing 2 bytes here in some cases, though it does not affect the result
-                            logging.warning(
+                            LOGGER.warning(
                                 "Something is off here! We are not where the entries should start."
                             )
                         base_offset = expected_entries_start
@@ -290,12 +289,12 @@ class ARSCParser:
                                     # Not sure if this is a good solution though
                                     self.buff.seek(ate.start)
                     elif pkg_chunk_header.type == RES_TABLE_LIBRARY_TYPE:
-                        logging.warning(
+                        LOGGER.warning(
                             "RES_TABLE_LIBRARY_TYPE chunk is not supported"
                         )
                     else:
                         # Unknown / not-handled chunk type
-                        logging.warning(
+                        LOGGER.warning(
                             "Unknown chunk type encountered inside RES_TABLE_PACKAGE: %s",
                             pkg_chunk_header,
                         )
@@ -304,7 +303,7 @@ class ARSCParser:
                     self.buff.seek(pkg_chunk_header.end)
             else:
                 # Unknown / not-handled chunk type
-                logging.warning(
+                LOGGER.warning(
                     "Unknown chunk type encountered: %s", res_header
                 )
 
@@ -453,7 +452,7 @@ class ARSCParser:
                 ),
             ]
         except IndexError:
-            logging.debug(
+            LOGGER.debug(
                 "Out of range dimension unit index for {}: {}".format(
                     complexToFloat(ate.key.get_data()),
                     ate.key.get_data() & COMPLEX_UNIT_MASK,
@@ -865,7 +864,7 @@ class ARSCParser:
                         # Infinite loop detection:
                         # TODO should this stay here or should be detect the loop much earlier?
                         if res_id == parent.mResId:
-                            logging.warning(
+                            LOGGER.warning(
                                 "Infinite loop detected at resource item {}. It references itself!".format(
                                     parent
                                 )
@@ -972,7 +971,7 @@ class ARSCParser:
             raise ValueError("'rid' must be an int")
 
         if rid not in self.resource_values:
-            logging.warning(
+            LOGGER.warning(
                 "The requested rid '0x{:08x}' could not be found in the list of resources.".format(
                     rid
                 )
@@ -984,7 +983,7 @@ class ARSCParser:
             if config in res_options:
                 return [(config, res_options[config])]
             elif fallback and config == ARSCResTableConfig.default_config():
-                logging.warning(
+                LOGGER.warning(
                     "No default resource config could be found for the given rid '0x{:08x}', using fallback!".format(
                         rid
                     )
@@ -1207,7 +1206,7 @@ class ARSCHeader:
                     break
                 buff.seek(cur_pos)
                 buff.read(1)
-                logging.warning(
+                LOGGER.warning(
                     "Appears that dummy data are found between elements!"
                 )
         else:
@@ -1324,16 +1323,16 @@ class ARSCResTypeSpec:
         # TODO: https://github.com/androguard/androguard/issues/1014 | Properly account for the cases where res0/1 are not zero
         try:
             if self.res0 != 0:
-                logging.warning("res0 must be zero!")
+                LOGGER.warning("res0 must be zero!")
             if self.res1 != 0:
-                logging.warning("res1 must be zero!")
+                LOGGER.warning("res1 must be zero!")
             self.entryCount = unpack('<I', buff.read(4))[0]
 
             self.typespec_entries = []
             for i in range(0, self.entryCount):
                 self.typespec_entries.append(unpack('<I', buff.read(4))[0])
         except Exception as e:
-            logging.error(e)
+            LOGGER.error(e)
 
 
 class ARSCResType:
@@ -1364,7 +1363,7 @@ class ARSCResType:
 
         self.config = ARSCResTableConfig(buff)
 
-        logging.debug("Parsed {}".format(self))
+        LOGGER.debug("Parsed {}".format(self))
 
     def get_type(self) -> str:
         return self.parent.mTableStrings.getString(self.id - 1)
@@ -1433,7 +1432,7 @@ class ARSCResTableConfig:
                 # uint8_t inputPad0
                 self.input = unpack('<I', buff.read(4))[0]
             else:
-                logging.debug(
+                LOGGER.debug(
                     "This file does not have input flags! size={}".format(
                         self.size
                     )
@@ -1446,7 +1445,7 @@ class ARSCResTableConfig:
                 # uint16_t screenHeight
                 self.screenSize = unpack('<I', buff.read(4))[0]
             else:
-                logging.debug(
+                LOGGER.debug(
                     "This file does not have screenSize! size={}".format(
                         self.size
                     )
@@ -1459,7 +1458,7 @@ class ARSCResTableConfig:
                 # uint16_t minorVersion  which should be always 0, as the meaning is not defined
                 self.version = unpack('<I', buff.read(4))[0]
             else:
-                logging.debug(
+                LOGGER.debug(
                     "This file does not have version! size={}".format(
                         self.size
                     )
@@ -1474,7 +1473,7 @@ class ARSCResTableConfig:
                 # uint16_t smallestScreenWidthDp
                 (self.screenConfig,) = unpack('<I', buff.read(4))
             else:
-                logging.debug(
+                LOGGER.debug(
                     "This file does not have a screenConfig! size={}".format(
                         self.size
                     )
@@ -1487,7 +1486,7 @@ class ARSCResTableConfig:
                 # uint16_t screenHeightDp
                 (self.screenSizeDp,) = unpack('<I', buff.read(4))
             else:
-                logging.debug(
+                LOGGER.debug(
                     "This file does not have a screenSizeDp! size={}".format(
                         self.size
                     )
@@ -1507,7 +1506,7 @@ class ARSCResTableConfig:
                 # uint16_t screenConfigPad2
                 (self.screenConfig2,) = unpack("<I", buff.read(4))
             else:
-                logging.debug(
+                LOGGER.debug(
                     "This file does not have a screenConfig2! size={}".format(
                         self.size
                     )
@@ -1516,7 +1515,7 @@ class ARSCResTableConfig:
 
             self.exceedingSize = self.size - (buff.tell() - self.start)
             if self.exceedingSize > 0:
-                logging.debug("Skipping padding bytes!")
+                LOGGER.debug("Skipping padding bytes!")
                 self.padding = buff.read(self.exceedingSize)
 
         else:
@@ -1973,7 +1972,7 @@ class ARSCResTableEntry:
             self.key = ARSCResStringPoolRef(buff, self.parent)
 
         if self.is_weak():
-            logging.debug("Parsed {}".format(self))
+            LOGGER.debug("Parsed {}".format(self))
 
     def get_index(self) -> int:
         return self.index
@@ -2072,12 +2071,12 @@ class ARSCResStringPoolRef:
         (self.res0,) = unpack("<B", buff.read(1))
         try:
             if self.res0 != 0:
-                logging.warning("res0 must be always zero!")
+                LOGGER.warning("res0 must be always zero!")
             self.data_type = unpack('<B', buff.read(1))[0]
             # data is interpreted according to data_type
             self.data = unpack('<I', buff.read(4))[0]
         except Exception as e:
-            logging.error(e)
+            LOGGER.error(e)
 
     def get_data_value(self) -> str:
         return self.parent.stringpool_main.getString(self.data)
