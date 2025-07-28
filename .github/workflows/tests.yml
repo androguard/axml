@@ -21,7 +21,10 @@ jobs:
         python-version: '3.13'
 
     - name: Install Dependencies
-      run: python3 -m pip install .
+      run: |
+        python3 -m pip install --upgrade pip
+        python3 -m pip install rich lxml pytest
+        python3 -m pip install .
 
     - name: Run unittest tests
       run: python3 -m unittest discover -s tests
@@ -42,7 +45,14 @@ jobs:
     - name: Install Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get -y install --no-install-recommends python-is-python3 python3-build python3-lxml python3-setuptools
+        sudo apt-get -y install --no-install-recommends \
+          python3 \
+          python3-lxml \
+          python3-rich \
+          python3-pytest \
+          python3-setuptools \
+          python3-pip \
+          python3-build
 
     - name: Run unittest tests
       run: python3 -m unittest discover -s tests
@@ -62,7 +72,13 @@ jobs:
     - name: Install Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get -y install --no-install-recommends python3-lxml python3-setuptools
+        sudo apt-get -y install --no-install-recommends \
+          python3 \
+          python3-lxml \
+          python3-rich \
+          python3-pytest \
+          python3-setuptools \
+          python3-pip
 
     - name: Run unittest tests
       run: python3 -m unittest discover -s tests
