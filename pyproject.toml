@@ -8,6 +8,7 @@ description = "Python library for the Android binary XML (AXML) file format."
 authors = [
     { name = "anthony", email = "ping@42.bzh" },
     { name = "eighthave", email = "hans@eds.org" },
+    { name = "erev0s", email = "projects@erev0s.com" },
 ]
 version = "0.0.1a1"
 license = { file = "LICENSE" }
@@ -36,6 +37,12 @@ classifiers = [
 [project.scripts]
 axml = "axml.main:app_axml"
 arsc = "axml.main:app_arsc"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+"axml.resources" = ["*.xml", "*.json"]
 
 [project.urls]
 Homepage = "https://github.com/androguard/axml"
