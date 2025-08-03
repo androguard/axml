@@ -249,6 +249,28 @@ class ARSCTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             parser('@android:00')
 
+    def testCompactResource(self):
+        """
+        Assert that app name from compact resource is read correctly
+        """
+        with open(os.path.join(test_dir, 'data/ARSC/compact-resources.arsc'), "rb") as arsc_b:
+            arsc = ARSCParser(arsc_b.read())
+            app_name = '@7F010000'
+            res_id, package = arsc.parse_id(app_name)
+            locale = None
+            try:
+                config = (
+                    ARSCResTableConfig(None, locale=locale)
+                    if locale
+                    else ARSCResTableConfig.default_config()
+                )
+                app_name = arsc.get_resolved_res_configs(res_id, config)[0][1]
+            except Exception as e:
+                logging.warning("Exception selecting app name: %s" % e)
+            self.assertEqual(
+                app_name,
+                "erev0s.com-CompactEntry"
+            )
 
 if __name__ == '__main__':
     unittest.main()

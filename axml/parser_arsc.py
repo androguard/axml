@@ -1354,7 +1354,8 @@ class ARSCResType:
         (self.flags,) = unpack('<B', buff.read(1))
         self.reserved = unpack('<H', buff.read(2))[0]
         if self.reserved != 0:
-            raise ResParserError("reserved must be zero!")
+            # /libs/androidfw/LoadedArsc.cpp -> VerifyResTableType does not verify reserved value!
+            LOGGER.warning("Reserved must be zero! Meta is that you?")
         self.entryCount = unpack('<I', buff.read(4))[0]
         self.entriesStart = unpack('<I', buff.read(4))[0]
 
