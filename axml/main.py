@@ -3,8 +3,7 @@ import sys
 import io
 
 from .helper.logging import LOGGER
-from .printer import AXMLPrinter
-from .parser_arsc import ARSCParser
+from .printer import AXMLPrinter, ARSCPrinter
 
 def initAXMLParser():
     parser = argparse.ArgumentParser(
@@ -42,7 +41,7 @@ def app_axml():
     if arguments.input:
         with open(arguments.input, 'rb') as fd:
             a = AXMLPrinter(fd.read())
-            print(a.get_xml())
+            print(a.get_xml().decode('utf-8'))
     return 0
 
 
@@ -51,6 +50,6 @@ def app_arsc():
 
     if arguments.input:
         with open(arguments.input, 'rb') as fd:
-            a = ARSCParser(fd.read())
-            print(a)
+            a = ARSCPrinter(fd.read())
+            print(a.get_xml().decode('utf-8'))
     return 0

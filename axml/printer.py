@@ -165,7 +165,9 @@ class AXMLPrinter:
 
         :returns: bytes encoded as UTF-8
         """
-        return etree.tostring(self.root, encoding="utf-8", pretty_print=pretty)
+        if self.root:
+            return etree.tostring(self.root, encoding="utf-8", pretty_print=pretty)
+        return b""
 
     def get_xml_obj(self) -> etree.Element:
         """
