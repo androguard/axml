@@ -1,5 +1,7 @@
 
-# Androguard's axml
+# AXML/ARSC library
+
+![Powered By: Androguard](https://img.shields.io/badge/androguard-green?style=for-the-badge&label=Powered%20by)
 
 ![logo|100](./data/logo.png)
 
