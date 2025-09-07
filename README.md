@@ -1,6 +1,9 @@
 
 # Androguard's axml
 
+![logo|100](./data/logo.png)
+
+
 This is a library for handling the `AXML` file format. `AXML` is the informal
 common name for the compiled binary `XML` data format used in Android app files.
 The Android Open Source Project does not seem to have named the format, other
