@@ -144,7 +144,7 @@ class AXMLParser:
             self._valid = False
             return
 
-        self.sb = StringBlock(self.buff, header)
+        self.sb = StringBlock(self.buff, header.size)
 
         self.buff.seek(axml_header.header_size + header.size)
 

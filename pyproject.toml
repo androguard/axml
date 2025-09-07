@@ -1,7 +1,3 @@
-[build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "axml"
 description = "Python library for the Android binary XML (AXML) file format."
@@ -15,7 +11,7 @@ license = { file = "LICENSE" }
 readme = "README.md"
 
 requires-python = ">=3.9"
-dependencies = ["rich>=14.0.0", "lxml>=4.3.0"]
+dependencies = ["rich>=14.0.0", "lxml>=6.0.1"]
 
 keywords = ["android", "xml", "axml", "parser"]
 classifiers = [
@@ -48,6 +44,10 @@ include-package-data = true
 Homepage = "https://github.com/androguard/axml"
 Repository = "https://github.com/androguard/axml.git"
 Issues = "https://github.com/androguard/axml/issues"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
 
 [tool.black]
 line-length = 79

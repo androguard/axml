@@ -1,7 +1,7 @@
 """Logging
 """
 
-from logging import basicConfig, getLogger
+from logging import basicConfig, getLogger, Logger
 
 from rich.console import Console
 from rich.logging import RichHandler
@@ -13,4 +13,4 @@ basicConfig(
     handlers=[RichHandler(console=Console(stderr=True))],
 )
 
-LOGGER = getLogger('axml')
+LOGGER: Logger = getLogger('axml')

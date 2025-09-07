@@ -115,7 +115,7 @@ class ARSCParser:
                         "Already found a ResStringPool_header, but there should be only one! Will not parse the Pool again."
                     )
                 else:
-                    self.stringpool_main = StringBlock(self.buff, res_header)
+                    self.stringpool_main = StringBlock(self.buff, res_header.size)
                     LOGGER.debug(
                         "Found the main string pool: %s", self.stringpool_main
                     )
@@ -138,7 +138,7 @@ class ARSCParser:
                 type_sp_header = ARSCHeader(
                     self.buff, expected_type=RES_STRING_POOL_TYPE
                 )
-                mTableStrings = StringBlock(self.buff, type_sp_header)
+                mTableStrings = StringBlock(self.buff, type_sp_header.size)
 
                 # Next, we should have the resource key symbol table
                 self.buff.seek(
@@ -147,7 +147,7 @@ class ARSCParser:
                 key_sp_header = ARSCHeader(
                     self.buff, expected_type=RES_STRING_POOL_TYPE
                 )
-                mKeyStrings = StringBlock(self.buff, key_sp_header)
+                mKeyStrings = StringBlock(self.buff, key_sp_header.size)
 
                 # Add them to the dict of read packages
                 self.packages[package_name].append(current_package)
@@ -2037,7 +2037,7 @@ class ARSCComplex:
         # ResTable_ref is a uint32_t.
         for i in range(0, self.count):
             if buff.tell() + 4 > expected_end_of_chunk:
-                print(
+                LOGGER.warning(
                     f"We are out of bound with this complex entry. Count: {self.count}"
                 )
                 break

@@ -1,7 +1,7 @@
 import binascii
 import re
 
-from lxml import etree
+import lxml.etree as etree
 
 from .exceptions import NoDecoderFoundError
 from .helper.logging import LOGGER
@@ -26,10 +26,10 @@ class AXMLPrinter:
     def __init__(self, raw_buff: bytes):
         LOGGER.debug("AXMLPrinter")
 
-        self.axml = AXMLParser(raw_buff)
+        self.axml: AXMLParser = AXMLParser(raw_buff)
 
-        self.root = None
-        self.packerwarning = False
+        self.root: etree.Element|None = None
+        self.packerwarning: bool = False
         cur = []
 
         while self.axml.is_valid():
@@ -165,7 +165,7 @@ class AXMLPrinter:
 
         :returns: bytes encoded as UTF-8
         """
-        if self.root:
+        if self.root is not None:
             return etree.tostring(self.root, encoding="utf-8", pretty_print=pretty)
         return b""
 
@@ -213,7 +213,7 @@ class AXMLPrinter:
             _type, _data, lambda _: self.axml.getAttributeValue(index)
         )
 
-    def _fix_name(self, prefix, name) -> tuple[str, str]:
+    def _fix_name(self, prefix: str, name: str) -> tuple[str, str]:
         """
         Apply some fixes to element named and attribute names.
         Try to get conform to:
@@ -285,7 +285,7 @@ class AXMLPrinter:
 
         return prefix, name
 
-    def _fix_value(self, value):
+    def _fix_value(self, value: str):
         """
         Return a cleaned version of a value
         according to the specification:
@@ -323,7 +323,7 @@ class AXMLPrinter:
             value = self.__replacement.sub('_', value)
         return value
 
-    def _print_namespace(self, uri):
+    def _print_namespace(self, uri: str):
         if uri != "":
             uri = "{{{}}}".format(uri)
         return uri

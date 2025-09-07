@@ -9,6 +9,7 @@ from axml.constants import UTF8_FLAG
 from axml.exceptions import ResParserError
 
 
+
 class StringBlock:
     """
     StringBlock is a CHUNK inside an AXML File: `ResStringPool_header`
@@ -17,13 +18,13 @@ class StringBlock:
     See http://androidxref.com/9.0.0_r3/xref/frameworks/base/libs/androidfw/include/androidfw/ResourceTypes.h#436
     """
 
-    def __init__(self, buff: BinaryIO, header: "ARSCHeader") -> None:
+    def __init__(self, buff: BinaryIO, header_size: int) -> None:
         """
         :param buff: buffer which holds the string block
         :param header: a instance of [ARSCHeader][androguard.core.axml.ARSCHeader]
         """
         self._cache = {}
-        self.header = header
+        self.header_size: int = header_size
         # We already read the header (which was chunk_type and chunk_size
         # Now, we read the string_count:
         self.stringCount = unpack('<I', buff.read(4))[0]
@@ -72,7 +73,7 @@ class StringBlock:
             self.m_styleOffsets.append(unpack('<I', buff.read(4))[0])
 
         # FIXME it is probably better to parse n strings and not calculate the size
-        size = self.header.size - self.stringsOffset
+        size = self.header_size - self.stringsOffset
 
         # if there are styles as well, we do not want to read them too.
         # Only read them, if no
@@ -85,7 +86,7 @@ class StringBlock:
         self.m_charbuff = buff.read(size)
 
         if self.stylesOffset != 0 and self.styleCount != 0:
-            size = self.header.size - self.stylesOffset
+            size = self.header_size - self.stylesOffset
 
             if (size % 4) != 0:
                 LOGGER.warning("Size of styles is not aligned by four bytes.")
@@ -301,7 +302,7 @@ class StringBlock:
         """
         Print some information on stdout about the string table
         """
-        print(
+        LOGGER.info(
             "StringBlock(stringsCount=0x%x, "
             "stringsOffset=0x%x, "
             "stylesCount=0x%x, "
@@ -318,13 +319,11 @@ class StringBlock:
         )
 
         if self.stringCount > 0:
-            print()
-            print("String Table: ")
+            LOGGER.info("String Table: ")
             for i, s in enumerate(self):
-                print("{:08d} {}".format(i, repr(s)))
+                LOGGER.info("{:08d} {}".format(i, repr(s)))
 
         if self.styleCount > 0:
-            print()
-            print("Styles Table: ")
+            LOGGER.info("Styles Table: ")
             for i in range(self.styleCount):
-                print("{:08d} {}".format(i, repr(self.getStyle(i))))
+                LOGGER.info("{:08d} {}".format(i, repr(self.getStyle(i))))

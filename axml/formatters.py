@@ -5,7 +5,7 @@ from axml.constants import RADIX_MULTS, TYPE_STRING, TYPE_ATTRIBUTE, TYPE_REFERE
     TYPE_FIRST_COLOR_INT, TYPE_LAST_COLOR_INT, TYPE_LAST_INT, TYPE_FIRST_INT
 
 
-def complexToFloat(xcomplex) -> float:
+def complexToFloat(xcomplex: int) -> float:
     """
     Convert a complex unit into float
     """
