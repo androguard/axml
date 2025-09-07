@@ -1,5 +1,3 @@
-
-
 # Constants for ARSC Files
 # see http://aospxref.com/android-13.0.0_r3/xref/frameworks/base/libs/androidfw/include/androidfw/ResourceTypes.h#233
 RES_NULL_TYPE = 0x0000
@@ -95,7 +93,6 @@ TYPE_LAST_COLOR_INT = 0x1F
 TYPE_LAST_INT = 0x1F
 
 
-
 # Table used to lookup functions to determine the value representation in ARSCParser
 TYPE_TABLE = {
     TYPE_ATTRIBUTE: "attribute",
@@ -119,7 +116,6 @@ DIMENSION_UNITS = ["px", "dip", "sp", "pt", "in", "mm"]
 FRACTION_UNITS = ["%", "%p"]
 
 COMPLEX_UNIT_MASK = 0x0F
-
 
 
 # See http://aospxref.com/android-13.0.0_r3/xref/frameworks/native/include/android/configuration.h#56

@@ -3,11 +3,10 @@ from __future__ import annotations
 from struct import unpack
 from typing import BinaryIO
 
-from .helper.logging import LOGGER
-
 from axml.constants import UTF8_FLAG
 from axml.exceptions import ResParserError
 
+from .helper.logging import LOGGER
 
 
 class StringBlock:

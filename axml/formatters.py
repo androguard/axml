@@ -1,8 +1,23 @@
-from struct import unpack, pack
+from struct import pack, unpack
 
-from axml.constants import RADIX_MULTS, TYPE_STRING, TYPE_ATTRIBUTE, TYPE_REFERENCE, TYPE_FLOAT, \
-    TYPE_INT_HEX, TYPE_INT_BOOLEAN, TYPE_DIMENSION, DIMENSION_UNITS, COMPLEX_UNIT_MASK, TYPE_FRACTION, FRACTION_UNITS, \
-    TYPE_FIRST_COLOR_INT, TYPE_LAST_COLOR_INT, TYPE_LAST_INT, TYPE_FIRST_INT
+from axml.constants import (
+    COMPLEX_UNIT_MASK,
+    DIMENSION_UNITS,
+    FRACTION_UNITS,
+    RADIX_MULTS,
+    TYPE_ATTRIBUTE,
+    TYPE_DIMENSION,
+    TYPE_FIRST_COLOR_INT,
+    TYPE_FIRST_INT,
+    TYPE_FLOAT,
+    TYPE_FRACTION,
+    TYPE_INT_BOOLEAN,
+    TYPE_INT_HEX,
+    TYPE_LAST_COLOR_INT,
+    TYPE_LAST_INT,
+    TYPE_REFERENCE,
+    TYPE_STRING,
+)
 
 
 def complexToFloat(xcomplex: int) -> float:
@@ -10,6 +25,7 @@ def complexToFloat(xcomplex: int) -> float:
     Convert a complex unit into float
     """
     return float(xcomplex & 0xFFFFFF00) * RADIX_MULTS[(xcomplex >> 4) & 3]
+
 
 def format_value(
     _type: int, _data: int, lookup_string=lambda ix: "<string>"

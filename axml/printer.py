@@ -3,13 +3,13 @@ import re
 
 import lxml.etree as etree
 
+from axml.constants import END_DOCUMENT, END_TAG, START_TAG, TEXT
+from axml.formatters import format_value
+from axml.parser_arsc import ARSCParser
+from axml.parser_axml import AXMLParser
+
 from .exceptions import NoDecoderFoundError
 from .helper.logging import LOGGER
-
-from axml.constants import START_TAG, END_TAG, TEXT, END_DOCUMENT
-from axml.formatters import format_value
-from axml.parser_axml import AXMLParser
-from axml.parser_arsc import ARSCParser
 
 
 class AXMLPrinter:
@@ -28,7 +28,7 @@ class AXMLPrinter:
 
         self.axml: AXMLParser = AXMLParser(raw_buff)
 
-        self.root: etree.Element|None = None
+        self.root: etree.Element | None = None
         self.packerwarning: bool = False
         cur = []
 
@@ -166,7 +166,9 @@ class AXMLPrinter:
         :returns: bytes encoded as UTF-8
         """
         if self.root is not None:
-            return etree.tostring(self.root, encoding="utf-8", pretty_print=pretty)
+            return etree.tostring(
+                self.root, encoding="utf-8", pretty_print=pretty
+            )
         return b""
 
     def get_xml_obj(self) -> etree.Element:
@@ -298,10 +300,10 @@ class AXMLPrinter:
         """
         if not self.__charrange or not self.__replacement:
             self.__charrange = re.compile(
-                '^[\u0020-\uD7FF\u0009\u000A\u000D\uE000-\uFFFD\U00010000-\U0010FFFF]*$'
+                '^[\u0020-\ud7ff\u0009\u000a\u000d\ue000-\ufffd\U00010000-\U0010ffff]*$'
             )
             self.__replacement = re.compile(
-                '[^\u0020-\uD7FF\u0009\u000A\u000D\uE000-\uFFFD\U00010000-\U0010FFFF]'
+                '[^\u0020-\ud7ff\u0009\u000a\u000d\ue000-\ufffd\U00010000-\U0010ffff]'
             )
 
         # Reading string until \x00. This is the same as aapt does.
@@ -328,6 +330,7 @@ class AXMLPrinter:
             uri = "{{{}}}".format(uri)
         return uri
 
+
 class ARSCPrinter:
     # TODO: be able to dump all locales of a specific type
     # TODO: be able to recreate the structure of files when developing
@@ -336,7 +339,9 @@ class ARSCPrinter:
     def __init__(self, raw_buff: bytes) -> None:
         self.arsc = ARSCParser(raw_buff)
 
-    def get_xml(self, pack: str = None, table_type: str = None, lcl: str = None) -> bytes:
+    def get_xml(
+        self, pack: str = None, table_type: str = None, lcl: str = None
+    ) -> bytes:
         package = pack or self.arsc.get_packages_names()[0]
         ttype = table_type or "public"
         locale = lcl or '\x00\x00'
@@ -344,7 +349,13 @@ class ARSCPrinter:
         if not hasattr(self.arsc, "get_{}_resources".format(ttype)):
             raise NoDecoderFoundError(ttype)
 
-        get_table_type_resources = getattr(self.arsc, "get_" + ttype + "_resources")(package, locale)
+        get_table_type_resources = getattr(
+            self.arsc, "get_" + ttype + "_resources"
+        )(package, locale)
 
-        buff = etree.tostring(etree.fromstring(get_table_type_resources), pretty_print=True, encoding="UTF-8")
+        buff = etree.tostring(
+            etree.fromstring(get_table_type_resources),
+            pretty_print=True,
+            encoding="UTF-8",
+        )
         return buff

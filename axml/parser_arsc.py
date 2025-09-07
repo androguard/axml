@@ -7,12 +7,12 @@ from struct import unpack
 from typing import BinaryIO, Union
 from xml.sax.saxutils import escape
 
-from .helper.logging import LOGGER
-
 from axml.constants import *
 from axml.exceptions import ResParserError
-from axml.formatters import format_value, complexToFloat
+from axml.formatters import complexToFloat, format_value
 from axml.stringblock import StringBlock
+
+from .helper.logging import LOGGER
 
 
 class ARSCParser:
@@ -115,7 +115,9 @@ class ARSCParser:
                         "Already found a ResStringPool_header, but there should be only one! Will not parse the Pool again."
                     )
                 else:
-                    self.stringpool_main = StringBlock(self.buff, res_header.size)
+                    self.stringpool_main = StringBlock(
+                        self.buff, res_header.size
+                    )
                     LOGGER.debug(
                         "Found the main string pool: %s", self.stringpool_main
                     )
@@ -263,7 +265,10 @@ class ARSCParser:
                         self.packages[package_name].append(entries)
 
                         base_offset = self.buff.tell()
-                        if base_offset + ((4 - (base_offset % 4)) % 4) != expected_entries_start:
+                        if (
+                            base_offset + ((4 - (base_offset % 4)) % 4)
+                            != expected_entries_start
+                        ):
                             # FIXME: seems like I am missing 2 bytes here in some cases, though it does not affect the result
                             LOGGER.warning(
                                 "Something is off here! We are not where the entries should start."
@@ -1107,6 +1112,7 @@ class ARSCParser:
             else:
                 return "@{}:{}/{}".format(package, resource, name)
 
+
 class PackageContext:
     def __init__(
         self,
@@ -1918,7 +1924,6 @@ class ARSCResTableConfig:
         return "<ARSCResTableConfig '{}'={}>".format(
             self.get_qualifier(), repr(self._get_tuple())
         )
-
 
 
 class ARSCResTableEntry:

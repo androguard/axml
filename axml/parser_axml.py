@@ -2,13 +2,13 @@ import io
 from struct import unpack
 from typing import Union
 
-from .helper.logging import LOGGER
-
 from axml.constants import *
 from axml.exceptions import ResParserError
 from axml.parser_arsc import ARSCHeader
 from axml.resources import public
 from axml.stringblock import StringBlock
+
+from .helper.logging import LOGGER
 
 
 class AXMLParser:
@@ -545,7 +545,7 @@ class AXMLParser:
 
         return self.m_attribute_count
 
-    def getAttributeUri(self, index:int) -> int:
+    def getAttributeUri(self, index: int) -> int:
         """
         Returns the numeric ID for the namespace URI of an attribute
 
@@ -558,14 +558,14 @@ class AXMLParser:
 
         return uri
 
-    def getAttributeNamespace(self, index:int) -> str:
+    def getAttributeNamespace(self, index: int) -> str:
         """
         Return the Namespace URI (if any) for the attribute
 
         :returns: the attribute uri, or empty string if no namespace
         """
         LOGGER.debug(index)
-    
+
         uri = self.getAttributeUri(index)
 
         # No Namespace
@@ -574,7 +574,7 @@ class AXMLParser:
 
         return self.sb[uri]
 
-    def getAttributeName(self, index:int) -> str:
+    def getAttributeName(self, index: int) -> str:
         """
         Returns the String which represents the attribute name
 
