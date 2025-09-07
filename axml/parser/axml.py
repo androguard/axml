@@ -2,13 +2,13 @@ import io
 from struct import unpack
 from typing import Union
 
-from axml.constants import *
-from axml.exceptions import ResParserError
-from axml.parser_arsc import ARSCHeader
+from axml.utils.constants import *
+from axml.utils.exceptions import ResParserError
+from axml.parser.arsc import ARSCHeader
 from axml.resources import public
-from axml.stringblock import StringBlock
+from axml.parser.stringblock import StringBlock
 
-from .helper.logging import LOGGER
+from ..helper.logging import LOGGER
 
 
 class AXMLParser:

@@ -1,16 +1,17 @@
 
 # Androguard's axml
 
-This is a library for handling the AXML file format.  "AXML" is the informal
-common name for the compiled binary XML data format used in Android app files.
+This is a library for handling the `AXML` file format. `AXML` is the informal
+common name for the compiled binary `XML` data format used in Android app files.
 The Android Open Source Project does not seem to have named the format, other
-than referring to is as "binary XML" or "compiled XML".  So AXML stands for
+than referring to is as `binary XML` or `compiled XML`.So `AXML` stands for
 Android XML. The file format is based on compiling XML source into a binary
 format based on [protobuf](). There are a number of different Android XML file
 types that are compiled to AXML, these are generically known as [Android
 Resources](https://developer.android.com/guide/topics/resources/available-resources).
+
 All of these files are included in the APK's ZIP package with the file extension
-`.xml` even though they are actually AXML and not XML.
+`.xml` even though they are actually `AXML` and not `XML`.
 
 Some specific data files, like String Resources and Style Resources, are instead
 compiled into a single file `resources.arsc` in its own data format, known as
@@ -35,48 +36,26 @@ https://developer.android.com/guide/topics/manifest/manifest-intro#reference
 
  - Passing androguard tests for axml and arsc.
 
-## Next steps to reach an "up to par" milestone
+### Coding style
 
- - pyproject.toml/setup.py
- - workflows for testing/building
- - ?
+ - Follow [PEP 257](https://peps.python.org/pep-0257/) guidelines using the reStructuredText (reST) format for all docstrings.
 
-#### Structure
 
-~~~~
-axml/
-├── axml/
-│   ├── __init__.py       # Expose the public API (parse_axml, AXMLParser, AXMLPrinter)
-│   ├── constants.py      # All constants (chunk types, flag values...)
-│   ├── exceptions.py     # Custom exceptions (like ResParserError)
-│   ├── stringblock.py    # The StringBlock class and its helper functions (_decode8, _decode16...)
-│   ├── parser_arsc.py    # The resources parser class and related parsing functions
-│   ├── parser_axml.py    # The AXMLParser class and related parsing functions
-│   ├── printer.py        # The AXMLPrinter class for converting parsed AXML into an ElementTree
-│   └── formatters.py     # Helper functions like format_value and any formatting utilities
-│   ├── resources
-│   │   ├── __init__.py
-│   │   ├── public.json
-│   │   ├── public.py
-│   │   └── public.xml
-├── tests/
-│   └── test_*.py    # Unit tests for each module
-├── setup.py              # Packaging file
-├── pyproject.toml        # Build configuration
-└── README.md             # Project description and usage instructions
-~~~~
+## Installation
 
-### Goals
+## Examples
+
+## TODO
 
  - Write tests early approach, so we can immediately verify breaking changes.
  - Expose a clean public API
  - Standalone capabilities for axml parsing
  - Provide basic documentation
+ - pyproject.toml/setup.py
+ - workflows for testing/building
 
 
-### Coding style
-
- - Follow [PEP 257](https://peps.python.org/pep-0257/) guidelines using the reStructuredText (reST) format for all docstrings.
+## Authors
 
 ## AXML binary format
 

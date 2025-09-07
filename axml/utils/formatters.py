@@ -1,6 +1,6 @@
 from struct import pack, unpack
 
-from axml.constants import (
+from axml.utils.constants import (
     COMPLEX_UNIT_MASK,
     DIMENSION_UNITS,
     FRACTION_UNITS,

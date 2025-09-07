@@ -5,7 +5,7 @@ import unittest
 
 from lxml import etree
 
-from axml.parser_arsc import ARSCResTableConfig, ARSCParser
+from axml.parser.arsc import ARSCResTableConfig, ARSCParser
 
 test_dir = os.path.dirname(os.path.abspath(__file__))
 

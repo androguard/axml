@@ -7,12 +7,12 @@ from struct import unpack
 from typing import BinaryIO, Union
 from xml.sax.saxutils import escape
 
-from axml.constants import *
-from axml.exceptions import ResParserError
-from axml.formatters import complexToFloat, format_value
-from axml.stringblock import StringBlock
+from axml.utils.constants import *
+from axml.utils.exceptions import ResParserError
+from axml.utils.formatters import complexToFloat, format_value
+from axml.parser.stringblock import StringBlock
 
-from .helper.logging import LOGGER
+from ..helper.logging import LOGGER
 
 
 class ARSCParser:

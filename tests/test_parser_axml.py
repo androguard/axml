@@ -3,9 +3,9 @@ import os
 import unittest
 from xml.dom import minidom
 
-from axml.exceptions import ResParserError
-from axml.parser_arsc import ARSCHeader
-from axml.parser_axml import AXMLParser
+from axml.utils.exceptions import ResParserError
+from axml.parser.arsc import ARSCHeader
+from axml.parser.axml import AXMLParser
 from axml.printer import AXMLPrinter
 
 test_dir = os.path.dirname(os.path.abspath(__file__))

@@ -3,10 +3,10 @@ from __future__ import annotations
 from struct import unpack
 from typing import BinaryIO
 
-from axml.constants import UTF8_FLAG
-from axml.exceptions import ResParserError
+from axml.utils.constants import UTF8_FLAG
+from axml.utils.exceptions import ResParserError
 
-from .helper.logging import LOGGER
+from ..helper.logging import LOGGER
 
 
 class StringBlock:
@@ -20,7 +20,7 @@ class StringBlock:
     def __init__(self, buff: BinaryIO, header_size: int) -> None:
         """
         :param buff: buffer which holds the string block
-        :param header: a instance of [ARSCHeader][androguard.core.axml.ARSCHeader]
+        :param header_size: normally the size of an header
         """
         self._cache = {}
         self.header_size: int = header_size

@@ -3,13 +3,12 @@ import re
 
 import lxml.etree as etree
 
-from axml.constants import END_DOCUMENT, END_TAG, START_TAG, TEXT
-from axml.formatters import format_value
-from axml.parser_arsc import ARSCParser
-from axml.parser_axml import AXMLParser
+from axml.utils.constants import END_DOCUMENT, END_TAG, START_TAG, TEXT
+from axml.utils.formatters import format_value
+from axml.parser import ARSCParser, AXMLParser
 
-from .exceptions import NoDecoderFoundError
-from .helper.logging import LOGGER
+from axml.utils.exceptions import NoDecoderFoundError
+from axml.helper.logging import LOGGER
 
 
 class AXMLPrinter:
