@@ -206,7 +206,7 @@ class AXMLPrinter:
             )
         return b''
 
-    def get_xml_obj(self) -> etree.Element | None:
+    def get_xml_obj(self) -> etree.Element:
         """
         Get the XML as an ElementTree object
 
