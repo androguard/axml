@@ -1,7 +1,9 @@
 import argparse
 
+from axml.arsc import ARSCPrinter
+from axml.axml import AXMLPrinter
+
 from .helper.logging import LOGGER
-from axml.printer import ARSCPrinter, AXMLPrinter
 
 
 def initAXMLParser():
