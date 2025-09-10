@@ -41,6 +41,10 @@ def app_axml():
         with open(arguments.input, 'rb') as fd:
             a = AXMLPrinter(fd.read())
             LOGGER.info(a.get_xml().decode('utf-8'))
+            LOGGER.info(a.package)
+            LOGGER.info(a.androidversion)
+            LOGGER.info(a.uses_permissions)
+
     return 0
 
 

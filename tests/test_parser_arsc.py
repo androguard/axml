@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
+import io
 import logging
 import os
 import unittest
 
 from lxml import etree
 
-from axml.arsc import ARSCResTableConfig, ARSCParser
+from axml.arsc import ARSCHeader, ARSCParser, ARSCResTableConfig
+from axml.utils.exceptions import ResParserError
 
 test_dir = os.path.dirname(os.path.abspath(__file__))
 
 from operator import itemgetter
-
 
 TEST_APP_NAME = "TestsAndroguardApplication"
 TEST_ICONS = {
@@ -33,7 +34,10 @@ TEST_CONFIGS = {
 class ARSCTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        with open(os.path.join(test_dir, 'data/ARSC/TestActivity_resources.arsc'), "rb") as arsc_b:
+        with open(
+            os.path.join(test_dir, 'data/ARSC/TestActivity_resources.arsc'),
+            "rb",
+        ) as arsc_b:
             cls.arsc = ARSCParser(arsc_b.read())
 
     def testARSC(self):
@@ -126,16 +130,22 @@ class ARSCTest(unittest.TestCase):
 
         # Also test non existing resources
         self.assertIsNone(self.arsc.get_resource_xml_name(0xFFFFFFFF))
-        self.assertEqual(self.arsc.get_id('sdf', 0x7F040001), (None, None, None))
         self.assertEqual(
-            self.arsc.get_id('tests.androguard', 0xFFFFFFFF), (None, None, None)
+            self.arsc.get_id('sdf', 0x7F040001), (None, None, None)
+        )
+        self.assertEqual(
+            self.arsc.get_id('tests.androguard', 0xFFFFFFFF),
+            (None, None, None),
         )
 
     def testDifferentStringLocales(self):
         """
         Test if the resolving of different string locales works
         """
-        with open(os.path.join(test_dir, 'data/ARSC/a2dp.Vol_137_resources.arsc'), "rb") as arsc_b:
+        with open(
+            os.path.join(test_dir, 'data/ARSC/a2dp.Vol_137_resources.arsc'),
+            "rb",
+        ) as arsc_b:
             arsc = ARSCParser(arsc_b.read())
             p = arsc.get_packages_names()[0]
 
@@ -156,7 +166,9 @@ class ARSCTest(unittest.TestCase):
             }
             for k, v in strings.items():
                 e = etree.fromstring(arsc.get_string_resources(p, k))
-                self.assertEqual(e.find("string[@name='{}']".format(item)).text, v)
+                self.assertEqual(
+                    e.find("string[@name='{}']".format(item)).text, v
+                )
 
     def testTypeConfigs(self):
         configs = self.arsc.get_type_configs(None)
@@ -185,7 +197,12 @@ class ARSCTest(unittest.TestCase):
         )
 
     def testFallback(self):
-        with open(os.path.join(test_dir, 'data/ARSC/com.teleca.jamendo_35_resources.arsc'), "rb") as arsc_b:
+        with open(
+            os.path.join(
+                test_dir, 'data/ARSC/com.teleca.jamendo_35_resources.arsc'
+            ),
+            "rb",
+        ) as arsc_b:
             arsc = ARSCParser(arsc_b.read())
 
         res_id = 2131296258
@@ -215,9 +232,7 @@ class ARSCTest(unittest.TestCase):
 
         # Also test on resolver:
         self.assertListEqual(
-            list(
-                map(itemgetter(1), arsc.get_resolved_res_configs(res_id))
-            ),
+            list(map(itemgetter(1), arsc.get_resolved_res_configs(res_id))),
             ["Jamendo", "Jamendo"],
         )
         self.assertListEqual(
@@ -252,7 +267,9 @@ class ARSCTest(unittest.TestCase):
         """
         Assert that app name from compact resource is read correctly
         """
-        with open(os.path.join(test_dir, 'data/ARSC/compact-resources.arsc'), "rb") as arsc_b:
+        with open(
+            os.path.join(test_dir, 'data/ARSC/compact-resources.arsc'), "rb"
+        ) as arsc_b:
             arsc = ARSCParser(arsc_b.read())
             app_name = '@7F010000'
             res_id, package = arsc.parse_id(app_name)
@@ -266,10 +283,63 @@ class ARSCTest(unittest.TestCase):
                 app_name = arsc.get_resolved_res_configs(res_id, config)[0][1]
             except Exception as e:
                 logging.warning("Exception selecting app name: %s" % e)
-            self.assertEqual(
-                app_name,
-                "erev0s.com-CompactEntry"
+            self.assertEqual(app_name, "erev0s.com-CompactEntry")
+
+    def testArscHeader(self):
+        """Test if wrong arsc headers are rejected"""
+        with self.assertRaises(ResParserError) as cnx:
+            ARSCHeader(io.BufferedReader(io.BytesIO(b"\x02\x01")))
+        self.assertIn("Can not read over the buffer size", str(cnx.exception))
+
+        with self.assertRaises(ResParserError) as cnx:
+            ARSCHeader(
+                io.BufferedReader(
+                    io.BytesIO(b"\x02\x01\xff\xff\x08\x00\x00\x00")
+                )
             )
+        self.assertIn("smaller than header size", str(cnx.exception))
+
+        with self.assertRaises(ResParserError) as cnx:
+            ARSCHeader(
+                io.BufferedReader(
+                    io.BytesIO(b"\x02\x01\x01\x00\x08\x00\x00\x00")
+                )
+            )
+        self.assertIn(
+            "declared header size is smaller than required size",
+            str(cnx.exception),
+        )
+
+        with self.assertRaises(ResParserError) as cnx:
+            ARSCHeader(
+                io.BufferedReader(
+                    io.BytesIO(b"\x02\x01\x08\x00\x04\x00\x00\x00")
+                )
+            )
+        self.assertIn(
+            "declared chunk size is smaller than required size",
+            str(cnx.exception),
+        )
+
+        a = ARSCHeader(
+            io.BufferedReader(
+                io.BytesIO(
+                    b"\xca\xfe\x08\x00\x10\x00\x00\x00"
+                    b"\xde\xea\xbe\xef\x42\x42\x42\x42"
+                )
+            )
+        )
+
+        self.assertEqual(a.type, 0xFECA)
+        self.assertEqual(a.header_size, 8)
+        self.assertEqual(a.size, 16)
+        self.assertEqual(a.start, 0)
+        self.assertEqual(a.end, 16)
+        self.assertEqual(
+            repr(a),
+            "<ARSCHeader idx='0x00000000' type='65226' header_size='8' size='16'>",
+        )
+
 
 if __name__ == '__main__':
     unittest.main()

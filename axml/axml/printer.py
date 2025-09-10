@@ -1,12 +1,17 @@
 import binascii
 import re
+from typing import Any, Iterator, List, Tuple, Union
 
 import lxml.etree as etree
 
+from axml.arsc.parser import ARSCParser
 from axml.axml import AXMLParser
 from axml.helper.logging import LOGGER
 from axml.utils.constants import END_DOCUMENT, END_TAG, START_TAG, TEXT
 from axml.utils.formatters import format_value
+
+NS_ANDROID_URI = 'http://schemas.android.com/apk/res/android'
+NS_ANDROID = '{{{}}}'.format(NS_ANDROID_URI)  # Namespace as used by etree
 
 
 class AXMLPrinter:
@@ -138,6 +143,39 @@ class AXMLPrinter:
                     )
                 break
 
+        self._init_fields()
+
+    def _init_fields(self):
+        self.androidversion = {}
+        self.uses_permissions = []
+
+        self.package = self.get_attribute_value("manifest", "package")
+
+        self.androidversion["Code"] = self.get_attribute_value(
+            "manifest", "versionCode"
+        )
+        self.androidversion["Name"] = self.get_attribute_value(
+            "manifest", "versionName"
+        )
+        self.permissions = list(set(
+            self.get_all_attribute_value("uses-permission", "name")
+        ))
+
+        for uses_permission in self.find_tags("uses-permission"):
+            self.uses_permissions.append(
+                [
+                    self.get_value_from_tag(uses_permission, "name"),
+                    self.get_permission_maxsdk(uses_permission),
+                ]
+            )
+
+    @staticmethod
+    def _ns(name):
+        """
+        return the name including the Android namespace URI
+        """
+        return NS_ANDROID + name
+
     def clean_and_replace_nsmap(self, nsmap, invalid_prefix):
         correct_prefix = 'android'
         corrected_nsmap = {}
@@ -166,9 +204,9 @@ class AXMLPrinter:
             return etree.tostring(
                 self.root, encoding="utf-8", pretty_print=pretty
             )
-        return b""
+        return b''
 
-    def get_xml_obj(self) -> etree.Element:
+    def get_xml_obj(self) -> etree.Element | None:
         """
         Get the XML as an ElementTree object
 
@@ -326,3 +364,192 @@ class AXMLPrinter:
         if uri != "":
             uri = "{{{}}}".format(uri)
         return uri
+
+    def is_tag_matched(self, tag: etree.Element, **attribute_filter) -> bool:
+        r"""
+        Return `True` if the attributes matches in attribute filter.
+
+        An attribute filter is a dictionary containing: {attribute_name: value}.
+        This function will return `True` if and only if all attributes have the same value.
+        This function allows to set the dictionary via kwargs, thus you can filter like this:
+
+        Example:
+
+            >>> a.is_tag_matched(tag, name="foobar", other="barfoo")
+
+        This function uses a fallback for attribute searching. It will by default use
+        the namespace variant but fall back to the non-namespace variant.
+        Thus specifiying `{"name": "foobar"}` will match on `<bla name="foobar" \>`
+        as well as on `<bla android:name="foobar" \>`.
+
+        :param tag: specify the tag element
+        :param attribute_filter: specify the attribute filter as dictionary
+
+        :returns: `True` if the attributes matches in attribute filter, else `False`
+        """
+        if len(attribute_filter) <= 0:
+            return True
+        for attr, value in attribute_filter.items():
+            _value = self.get_value_from_tag(tag, attr)
+            if _value != value:
+                return False
+        return True
+
+    def find_tags(self, tag_name: str, **attribute_filter) -> list[str]:
+        """
+        Return a list of all the matched tags
+
+        :param str tag_name: specify the tag name
+
+        :returns: the matched tags
+        """
+        xml = self.get_xml_obj()
+        if xml is None:
+            return []
+
+        if xml.tag == tag_name:
+            if self.is_tag_matched(xml.tag, **attribute_filter):
+                return [xml]
+            return []
+        tags = set()
+        tags.update(xml.findall(".//" + tag_name))
+
+        # https://github.com/androguard/androguard/pull/1053
+        # permission declared using tag <android:uses-permission...
+        tags.update(xml.findall(".//" + NS_ANDROID + tag_name))
+        return [
+            tag for tag in tags if self.is_tag_matched(tag, **attribute_filter)
+        ]
+
+    def _format_value(self, value):
+        """
+        Format a value with packagename, if not already set.
+        For example, the name `'.foobar'` will be transformed into `'package.name.foobar'`.
+
+        Names which do not contain any dots are assumed to be packagename-less as well:
+        `foobar` will also transform into `package.name.foobar`.
+
+        :param value: string value to format with the packaname
+        :returns: the formatted package name
+        """
+        if value and self.package:
+            v_dot = value.find(".")
+            if v_dot == 0:
+                # Dot at the start
+                value = self.package + value
+            elif v_dot == -1:
+                # Not a single dot
+                value = self.package + "." + value
+        return value
+
+    def get_all_attribute_value(
+        self,
+        tag_name: str,
+        attribute: str,
+        format_value: bool = True,
+        **attribute_filter,
+    ) -> Iterator[str]:
+        """
+        Yields all the attribute values in xml files which match with the tag name and the specific attribute
+
+        :param str tag_name: specify the tag name
+        :param str attribute: specify the attribute
+        :param bool format_value: specify if the value needs to be formatted with packagename
+
+        :returns: the attribute values
+        """
+        tags = self.find_tags(tag_name, **attribute_filter)
+        for tag in tags:
+            value = tag.get(self._ns(attribute)) or tag.get(attribute)
+            if value is not None:
+                if format_value:
+                    yield self._format_value(value)
+                else:
+                    yield value
+
+    def get_attribute_value(
+        self,
+        tag_name: str,
+        attribute: str,
+        format_value: bool = False,
+        **attribute_filter,
+    ) -> str:
+        """
+        Return the attribute value in xml files which matches the tag name and the specific attribute
+
+        :param str tag_name: specify the tag name
+        :param str attribute: specify the attribute
+        :param bool format_value: specify if the value needs to be formatted with packagename
+
+        :returns: the attribute value
+        """
+
+        for value in self.get_all_attribute_value(
+            tag_name, attribute, format_value, **attribute_filter
+        ):
+            if value is not None:
+                return value
+
+    def get_value_from_tag(
+        self, tag: etree.Element, attribute: str
+    ) -> Union[str, None]:
+        """
+        Return the value of the android prefixed attribute in a specific tag.
+
+        This function will always try to get the attribute with a `android:` prefix first,
+        and will try to return the attribute without the prefix, if the attribute could not be found.
+        This is useful for some broken `AndroidManifest.xml`, where no android namespace is set,
+        but could also indicate malicious activity (i.e. wrongly repackaged files).
+        A warning is printed if the attribute is found without a namespace prefix.
+
+        If you require to get the exact result you need to query the tag directly:
+
+        Example:
+
+            >>> from lxml.etree import Element
+            >>> tag = Element('bar', nsmap={'android': 'http://schemas.android.com/apk/res/android'})
+            >>> tag.set('{http://schemas.android.com/apk/res/android}foobar', 'barfoo')
+            >>> tag.set('name', 'baz')
+            # Assume that `a` is some APK object
+            >>> a.get_value_from_tag(tag, 'name')
+            'baz'
+            >>> tag.get('name')
+            'baz'
+            >>> tag.get('foobar')
+            None
+            >>> a.get_value_from_tag(tag, 'foobar')
+            'barfoo'
+
+        :param lxml.etree.Element tag: specify the tag element
+        :param str attribute: specify the attribute name
+        :returns: the attribute's value, or None if the attribute is not present
+        """
+
+        # TODO: figure out if both android:name and name tag exist which one to give preference:
+        # currently we give preference for the namespace one and fallback to the un-namespaced
+        value = tag.get(self._ns(attribute))
+        if value is None:
+            value = tag.get(attribute)
+
+            if value:
+                # If value is still None, the attribute could not be found, thus is not present
+                LOGGER.warning(
+                    "Failed to get the attribute '{}' on tag '{}' with namespace. "
+                    "But found the same attribute without namespace!".format(
+                        attribute, tag.tag
+                    )
+                )
+        return value
+
+    def get_permission_maxsdk(self, item):
+        maxSdkVersion = None
+        try:
+            maxSdkVersion = int(self.get_value_from_tag(item, "maxSdkVersion"))
+        except ValueError:
+            LOGGER.warning(
+                str(maxSdkVersion)
+                + ' is not a valid value for <uses-permission> maxSdkVersion'
+            )
+        except TypeError:
+            pass
+        return maxSdkVersion

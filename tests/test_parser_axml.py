@@ -1,13 +1,12 @@
-import io
 import os
 import unittest
 from xml.dom import minidom
 
+from axml.axml import AXMLParser, AXMLPrinter
 from axml.utils.exceptions import ResParserError
-from axml.arsc import ARSCHeader
-from axml.axml import AXMLPrinter, AXMLParser
 
 test_dir = os.path.dirname(os.path.abspath(__file__))
+
 
 def is_valid_manifest(tree):
     # We can not really check much more...
@@ -110,7 +109,7 @@ class AXMLTest(unittest.TestCase):
             "Foobar \u000a\u000d\u0b12",
         )
         self.assertEqual(a._fix_value("hello \U00011234"), "hello \U00011234")
-        self.assertEqual(a._fix_value("\uFFFF"), "_")
+        self.assertEqual(a._fix_value("\uffff"), "_")
         self.assertEqual(a._fix_value("hello\x00world"), "hello")
 
         self.assertEqual(a._fix_name('', 'foobar'), ('', 'foobar'))
@@ -287,7 +286,7 @@ class AXMLTest(unittest.TestCase):
         """Test if a wrong header type is rejected"""
         a = AXMLPrinter(
             b"\x03\x00\x08\x00\x24\x00\x00\x00"
-            b"\xDE\xAD\x1c\x00\x1c\x00\x00\x00"
+            b"\xde\xad\x1c\x00\x1c\x00\x00\x00"
             b"\x00\x00\x00\x00\x00\x00\x00\x00"
             b"\x00\x00\x00\x00"
             b"\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -305,61 +304,6 @@ class AXMLTest(unittest.TestCase):
             b"\x00\x00\x00\x00\x00\x00\x00\x00"
         )
         self.assertFalse(a.is_valid())
-
-    def testArscHeader(self):
-        """Test if wrong arsc headers are rejected"""
-        with self.assertRaises(ResParserError) as cnx:
-            ARSCHeader(io.BufferedReader(io.BytesIO(b"\x02\x01")))
-        self.assertIn("Can not read over the buffer size", str(cnx.exception))
-
-        with self.assertRaises(ResParserError) as cnx:
-            ARSCHeader(
-                io.BufferedReader(
-                    io.BytesIO(b"\x02\x01\xFF\xFF\x08\x00\x00\x00")
-                )
-            )
-        self.assertIn("smaller than header size", str(cnx.exception))
-
-        with self.assertRaises(ResParserError) as cnx:
-            ARSCHeader(
-                io.BufferedReader(
-                    io.BytesIO(b"\x02\x01\x01\x00\x08\x00\x00\x00")
-                )
-            )
-        self.assertIn(
-            "declared header size is smaller than required size",
-            str(cnx.exception),
-        )
-
-        with self.assertRaises(ResParserError) as cnx:
-            ARSCHeader(
-                io.BufferedReader(
-                    io.BytesIO(b"\x02\x01\x08\x00\x04\x00\x00\x00")
-                )
-            )
-        self.assertIn(
-            "declared chunk size is smaller than required size",
-            str(cnx.exception),
-        )
-
-        a = ARSCHeader(
-            io.BufferedReader(
-                io.BytesIO(
-                    b"\xCA\xFE\x08\x00\x10\x00\x00\x00"
-                    b"\xDE\xEA\xBE\xEF\x42\x42\x42\x42"
-                )
-            )
-        )
-
-        self.assertEqual(a.type, 0xFECA)
-        self.assertEqual(a.header_size, 8)
-        self.assertEqual(a.size, 16)
-        self.assertEqual(a.start, 0)
-        self.assertEqual(a.end, 16)
-        self.assertEqual(
-            repr(a),
-            "<ARSCHeader idx='0x00000000' type='65226' header_size='8' size='16'>",
-        )
 
     def testAndroidManifest(self):
         filenames = [
@@ -531,12 +475,61 @@ class AXMLTest(unittest.TestCase):
 
         self.assertTrue(ap.is_packed())
 
-    # def testCompactResource(self):
-    #     """
-    #     Assert that app name from compact resource is read correctly
-    #     """
-    #     a = APK(os.path.join(test_dir, "data/AXML/compact-entry.apk"))
-    #     self.assertEqual(a.get_app_name(), "erev0s.com-CompactEntry")
+    def testPackage(self) -> None:
+        """
+        Assert Package is extracted correctly
+        """
+        filename = "data/AXML/AndroidManifest-Chinese.xml"
+
+        with open(os.path.join(test_dir, filename), "rb") as f:
+            ap = AXMLPrinter(f.read())
+        self.assertIsInstance(ap, AXMLPrinter)
+
+        self.assertEqual(ap.package, "com.hotel")
+
+    def testVersionCode(self) -> None:
+        """
+        Assert versions are extracted correctly
+        """
+        filename = "data/AXML/AndroidManifest-Chinese.xml"
+
+        with open(os.path.join(test_dir, filename), "rb") as f:
+            ap = AXMLPrinter(f.read())
+        self.assertIsInstance(ap, AXMLPrinter)
+
+        self.assertEqual(len(ap.androidversion), 2)
+        self.assertEqual(ap.androidversion['Code'], "8")
+        self.assertEqual(ap.androidversion['Name'], "1.7.2")
+
+    def testPermissions(self) -> None:
+        """
+        Assert Permissions are extracted correctly
+        """
+        filename = "data/AXML/AndroidManifest-Chinese.xml"
+
+        with open(os.path.join(test_dir, filename), "rb") as f:
+            ap = AXMLPrinter(f.read())
+        self.assertIsInstance(ap, AXMLPrinter)
+
+        self.assertEqual(
+            sorted(ap.uses_permissions),
+            sorted([
+                ['android.permission.READ_PHONE_STATE', None],
+                ['android.permission.INTERNET', None],
+                ['android.permission.ACCESS_NETWORK_STATE', None],
+                ['android.permission.ACCESS_COARSE_LOCATION', None],
+                ['android.permission.ACCESS_NETWORK_STATE', None],
+                ['android.permission.WRITE_EXTERNAL_STORAGE', None],
+                ['android.permission.RECEIVE_BOOT_COMPLETED', None],
+                ['android.permission.CHANGE_NETWORK_STATE', None],
+                ['android.permission.RECEIVE_SMS', None],
+                ['android.permission.WRITE_EXTERNAL_STORAGE', None],
+                ['android.permission.SEND_SMS', None],
+                ['android.permission.INTERNET', None],
+                ['android.permission.ACCESS_FINE_LOCATION', None],
+                ['android.permission.WAKE_LOCK', None],
+            ]),
+        )
 
 
 if __name__ == '__main__':
