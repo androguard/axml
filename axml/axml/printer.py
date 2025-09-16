@@ -421,7 +421,7 @@ class AXMLPrinter:
             tag for tag in tags if self.is_tag_matched(tag, **attribute_filter)
         ]
 
-    def _format_value(self, value):
+    def format_value(self, value):
         """
         Format a value with packagename, if not already set.
         For example, the name `'.foobar'` will be transformed into `'package.name.foobar'`.
@@ -463,7 +463,7 @@ class AXMLPrinter:
             value = tag.get(self._ns(attribute)) or tag.get(attribute)
             if value is not None:
                 if format_value:
-                    yield self._format_value(value)
+                    yield self.format_value(value)
                 else:
                     yield value
 
@@ -473,7 +473,7 @@ class AXMLPrinter:
         attribute: str,
         format_value: bool = False,
         **attribute_filter,
-    ) -> str:
+    ) -> str|None:
         """
         Return the attribute value in xml files which matches the tag name and the specific attribute
 
@@ -553,3 +553,19 @@ class AXMLPrinter:
         except TypeError:
             pass
         return maxSdkVersion
+
+    def get_max_sdk_version(self) -> str:
+        """
+        Return the `android:maxSdkVersion` attribute
+
+        :returns: the `android:maxSdkVersion` attribute
+        """
+        return self.get_attribute_value("uses-sdk", "maxSdkVersion")
+
+    def get_min_sdk_version(self) -> str:
+        """
+          Return the `android:minSdkVersion` attribute
+
+          :returns: the `android:minSdkVersion` attribute
+        """
+        return self.get_attribute_value("uses-sdk", "minSdkVersion")

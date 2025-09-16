@@ -891,7 +891,7 @@ class ARSCParser:
                     )
 
     def get_resolved_res_configs(
-        self, rid: int, config: Union[ARSCResTableConfig, None] = None
+        self, rid: int, config: ARSCResTableConfig|None = None
     ) -> list[tuple[ARSCResTableConfig, str]]:
         """
         Return a list of resolved resource IDs with their corresponding configuration.
@@ -1036,6 +1036,7 @@ class ARSCParser:
 
         return result
 
+
     @staticmethod
     def parse_id(name: str) -> tuple[str, str]:
         """
@@ -1073,6 +1074,7 @@ class ARSCParser:
             return int(res_id, 16), package
         except ValueError:
             raise ValueError("ID is not a hex ID: '{}'".format(res_id))
+
 
     def get_resource_xml_name(
         self, r_id: int, package: Union[str, None] = None
@@ -1409,7 +1411,7 @@ class ARSCResTableConfig:
             cls.DEFAULT = ARSCResTableConfig(None)
         return cls.DEFAULT
 
-    def __init__(self, buff: Union[BinaryIO, None] = None, **kwargs) -> None:
+    def __init__(self, buff: BinaryIO|None = None, **kwargs) -> None:
         if buff is not None:
             self.start = buff.tell()
 
