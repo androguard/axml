@@ -157,9 +157,9 @@ class AXMLPrinter:
         self.androidversion["Name"] = self.get_attribute_value(
             "manifest", "versionName"
         )
-        self.permissions = list(set(
-            self.get_all_attribute_value("uses-permission", "name")
-        ))
+        self.permissions = list(
+            set(self.get_all_attribute_value("uses-permission", "name"))
+        )
 
         for uses_permission in self.find_tags("uses-permission"):
             self.uses_permissions.append(
@@ -473,7 +473,7 @@ class AXMLPrinter:
         attribute: str,
         format_value: bool = False,
         **attribute_filter,
-    ) -> str|None:
+    ) -> str | None:
         """
         Return the attribute value in xml files which matches the tag name and the specific attribute
 
@@ -564,8 +564,8 @@ class AXMLPrinter:
 
     def get_min_sdk_version(self) -> str:
         """
-          Return the `android:minSdkVersion` attribute
+        Return the `android:minSdkVersion` attribute
 
-          :returns: the `android:minSdkVersion` attribute
+        :returns: the `android:minSdkVersion` attribute
         """
         return self.get_attribute_value("uses-sdk", "minSdkVersion")

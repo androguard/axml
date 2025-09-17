@@ -2,13 +2,22 @@
 <p align="center"><img width="120" src="./.github/logo.png"></p>
 <h2 align="center">AXML</h2>
 
-# AXML/ARSC library
+# AXML/ARSC: The Rosetta Stone for Android's Binary XML
 
 <div align="center">
 
 ![Powered By: Androguard](https://img.shields.io/badge/androguard-green?style=for-the-badge&label=Powered%20by&link=https%3A%2F%2Fgithub.com%2Fandroguard)
 
 </div>
+
+Android doesn't speak in plain text XML. To save space and speed up parsing,
+it uses a compressed, obfuscated binary format (AXML) for its manifests and 
+a complex table (ARSC) for its resources. axml is your translator.
+
+This is a standalone, dependency-free, native Python library built to decode
+the secrets of Android's binary XML and resource files. It is a 
+battle-hardened pillar of the new Androguard Ecosystem, providing the critical
+ ability to turn machine-optimized formats back into human-readable intelligence.
 
 This is a library for handling the `AXML` file format. `AXML` is the informal
 common name for the compiled binary `XML` data format used in Android app files.
