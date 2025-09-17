@@ -6,7 +6,7 @@ authors = [
     { name = "eighthave", email = "hans@eds.org" },
     { name = "erev0s", email = "projects@erev0s.com" },
 ]
-version = "0.0.1a1"
+version = "0.0.1"
 license = { file = "LICENSE" }
 readme = "README.md"
 
