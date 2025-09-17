@@ -1,10 +1,14 @@
 
+<p align="center"><img width="120" src="./.github/logo.png"></p>
+<h2 align="center">AXML</h2>
+
 # AXML/ARSC library
+
+<div align="center">
 
 ![Powered By: Androguard](https://img.shields.io/badge/androguard-green?style=for-the-badge&label=Powered%20by&link=https%3A%2F%2Fgithub.com%2Fandroguard)
 
-![logo|100](./data/logo.png)
-
+</div>
 
 This is a library for handling the `AXML` file format. `AXML` is the informal
 common name for the compiled binary `XML` data format used in Android app files.
