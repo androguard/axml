@@ -569,3 +569,86 @@ class AXMLPrinter:
         :returns: the `android:minSdkVersion` attribute
         """
         return self.get_attribute_value("uses-sdk", "minSdkVersion")
+
+    def get_target_sdk_version(self) -> str:
+        """
+        Return the `android:targetSdkVersion` attribute
+
+        :returns: the `android:targetSdkVersion` attribute
+        """
+        return self.get_attribute_value("uses-sdk", "targetSdkVersion")
+    
+    def get_effective_target_sdk_version(self) -> int:
+        """
+        Return the effective `targetSdkVersion`, always returns int > 0.
+
+        If the `targetSdkVersion` is not set, it defaults to 1.  This is
+        set based on defaults as defined in:
+        <https://developer.android.com/guide/topics/manifest/uses-sdk-element.html>
+
+        :returns: the effective `targetSdkVersion`
+        """
+        target_sdk_version = self.get_target_sdk_version()
+        if not target_sdk_version:
+            target_sdk_version = self.get_min_sdk_version()
+        try:
+            return int(target_sdk_version)
+        except (ValueError, TypeError):
+            return 1
+        
+    def get_libraries(self) -> list[str]:
+        """
+        Return the `android:name` attributes for libraries
+
+        :returns: the `android:name` attributes
+        """
+        return list(self.get_all_attribute_value("uses-library", "name"))
+
+    def get_features(self) -> list[str]:
+        """
+        Return a list of all `android:names` found for the tag `uses-feature`
+        in the `AndroidManifest.xml`
+
+        :returns: the `android:names` found
+        """
+        return list(self.get_all_attribute_value("uses-feature", "name"))
+
+    def is_wearable(self) -> bool:
+        """
+        Checks if this application is build for wearables by
+        checking if it uses the feature 'android.hardware.type.watch'
+        See: https://developer.android.com/training/wearables/apps/creating.html for more information.
+
+        Not every app is setting this feature (not even the example Google provides),
+        so it might be wise to not 100% rely on this feature.
+
+        :returns: `True` if wearable, `False` otherwise
+        """
+        return 'android.hardware.type.watch' in self.get_features()
+
+    def is_leanback(self) -> bool:
+        """
+        Checks if this application is build for TV (Leanback support)
+        by checkin if it uses the feature 'android.software.leanback'
+
+        :returns: `True` if leanback feature is used, `False` otherwise
+        """
+        return 'android.software.leanback' in self.get_features()
+
+    def is_androidtv(self) -> bool:
+        """
+        Checks if this application does not require a touchscreen,
+        as this is the rule to get into the TV section of the Play Store
+        See: https://developer.android.com/training/tv/start/start.html for more information.
+
+        :returns: `True` if 'android.hardware.touchscreen' is not required, `False` otherwise
+        """
+        return (
+            self.get_attribute_value(
+                'uses-feature',
+                'name',
+                required="false",
+                name="android.hardware.touchscreen",
+            )
+            == "android.hardware.touchscreen"
+        )
