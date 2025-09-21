@@ -13,6 +13,11 @@ from axml.utils.formatters import format_value
 NS_ANDROID_URI = 'http://schemas.android.com/apk/res/android'
 NS_ANDROID = '{{{}}}'.format(NS_ANDROID_URI)  # Namespace as used by etree
 
+def namespace(name: str) -> str:
+    """
+    return the name including the Android namespace URI
+    """
+    return NS_ANDROID + name
 
 class AXMLPrinter:
     """
@@ -460,7 +465,7 @@ class AXMLPrinter:
         """
         tags = self.find_tags(tag_name, **attribute_filter)
         for tag in tags:
-            value = tag.get(self._ns(attribute)) or tag.get(attribute)
+            value = tag.get(namespace(attribute)) or tag.get(attribute)
             if value is not None:
                 if format_value:
                     yield self.format_value(value)
@@ -527,7 +532,7 @@ class AXMLPrinter:
 
         # TODO: figure out if both android:name and name tag exist which one to give preference:
         # currently we give preference for the namespace one and fallback to the un-namespaced
-        value = tag.get(self._ns(attribute))
+        value = tag.get(namespace(attribute))
         if value is None:
             value = tag.get(attribute)
 
