@@ -174,13 +174,6 @@ class AXMLPrinter:
                 ]
             )
 
-    @staticmethod
-    def _ns(name):
-        """
-        return the name including the Android namespace URI
-        """
-        return NS_ANDROID + name
-
     def clean_and_replace_nsmap(self, nsmap, invalid_prefix):
         correct_prefix = 'android'
         corrected_nsmap = {}
