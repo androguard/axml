@@ -61,19 +61,36 @@ https://developer.android.com/guide/topics/manifest/manifest-intro#reference
 
 ## Installation
 
-## Examples
+If you would like to install it locally, please create a new venv to use it directly, and then:
+
+```
+$ git clone https://github.com/androguard/axml.git
+$ pip install -e .
+```
+
+### Usage
+
+Two new commands will be exported in your current environnement: `axml` and `arsc`:
+
+```
+$ axml -i AndroidManifest.xml
+$ arsc -i resources.arsc
+```
+
+### API
+
+The most easy way to use this project is probably directly via using the API:
+
+```
+>>> from axml.axml import AXMLPrinter
+>>> from axml.arsc import ARSCPrinter
+>>> 
+```
 
 ## TODO
 
- - Write tests early approach, so we can immediately verify breaking changes.
  - Expose a clean public API
- - Standalone capabilities for axml parsing
  - Provide basic documentation
- - pyproject.toml/setup.py
- - workflows for testing/building
-
-
-## Authors
 
 ## AXML binary format
 
