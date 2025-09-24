@@ -8,6 +8,8 @@
 
 ![Powered](https://img.shields.io/badge/androguard-green?style=for-the-badge&label=Powered%20by&link=https%3A%2F%2Fgithub.com%2Fandroguard)
 ![Sponsor](https://img.shields.io/badge/sponsor-nlnet-blue?style=for-the-badge&link=https%3A%2F%2Fnlnet.nl%2F)
+![PYPY](https://img.shields.io/badge/PYPI-AXML-violet?style=for-the-badge&link=https%3A%2F%2Fpypi.org%2Fproject%2Faxml%2F)
+
 
 </div>
 
