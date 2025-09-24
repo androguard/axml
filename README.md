@@ -84,13 +84,20 @@ The most easy way to use this project is probably directly via using the API:
 ```
 >>> from axml.axml import AXMLPrinter
 >>> from axml.arsc import ARSCPrinter
->>> 
+>>> AXMLPrinter(open("AndroidManifest.xml", "rb").read())
+>>> obj
+<axml.axml.printer.AXMLPrinter object at 0x76b5a34b0550>
+>>> obj.package
+'org.t0t0.androguard.TC'
+>>> obj.androidversion
+{'Code': '1', 'Name': '1.0'}
+
+>>> obj = ARSCPrinter(open("test.arsc", "rb").read())
+>>> obj
+<axml.arsc.printer.ARSCPrinter object at 0x76b5a34b1310>
+>>> obj.get_xml()
+b'<resources>\n<public type="drawable" name="icon" id="0x7f020000"/>\n<public type="drawable" name="icon" id="0x7f020000"/>\n<public type="drawable" name="icon" id="0x7f020000"/>\n<public type="layout" name="main" id="0x7f030000"/>\n<public type="string" name="hello" id="0x7f040000"/>\n<public type="string" name="app_name" id="0x7f040001"/>\n</resources>\n'
 ```
-
-## TODO
-
- - Expose a clean public API
- - Provide basic documentation
 
 ## AXML binary format
 
