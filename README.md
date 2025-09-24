@@ -50,14 +50,6 @@ valid in the APK.
 
 https://developer.android.com/guide/topics/manifest/manifest-intro#reference
 
-## Current status
-
- - Passing androguard tests for axml and arsc.
-
-### Coding style
-
- - Follow [PEP 257](https://peps.python.org/pep-0257/) guidelines using the reStructuredText (reST) format for all docstrings.
-
 
 ## Installation
 
@@ -68,9 +60,16 @@ $ git clone https://github.com/androguard/axml.git
 $ pip install -e .
 ```
 
+or directly via pypi:
+
+```
+$ pip install axml
+```
+
 ### Usage
 
-Two new commands will be exported in your current environnement: `axml` and `arsc`:
+Two new commands will be exported in your current environnement: `axml` and `arsc`, that will allow to read and display
+the corresponding files.
 
 ```
 $ axml -i AndroidManifest.xml
