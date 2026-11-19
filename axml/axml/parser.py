@@ -597,7 +597,7 @@ class AXMLParser:
                     self.packerwarning = True
             else:
                 self.packerwarning = True
-                LOGGER.error("{attr} seems not appear in resourceIDs known")
+                LOGGER.error(f"{attr} seems not appear in resourceIDs known")
 
         if not res or res == ":":
             # Attach the HEX Number, so for multiple missing attributes we do not run
