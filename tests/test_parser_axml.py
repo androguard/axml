@@ -4,6 +4,7 @@ from xml.dom import minidom
 
 from axml.axml import AXMLParser, AXMLPrinter
 from axml.utils.exceptions import ResParserError
+from axml.utils.constants import ATTRIBUTE_IX_NAME, ATTRIBUTE_LENGTH, START_TAG
 
 test_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -531,6 +532,32 @@ class AXMLTest(unittest.TestCase):
             ]),
         )
 
+
+    def testUnknownAttributeResourceIDLogging(self):
+        """
+        Verify that unknown attribute resource IDs are logged in hexadecimal.
+        """
+        parser = AXMLParser.__new__(AXMLParser)
+
+        name_index = 0
+        resource_id = 0x7F123456
+
+        parser.m_event = START_TAG
+        parser.m_attributes = [0] * ATTRIBUTE_LENGTH
+        parser.m_attributes[ATTRIBUTE_IX_NAME] = name_index
+        parser.sb = ["unknown_attribute"]
+        parser.m_resourceIDs = [resource_id]
+        parser.packerwarning = False
+
+        with self.assertLogs("axml", level="ERROR") as log:
+            result = parser.getAttributeName(0)
+
+        self.assertEqual(result, "unknown_attribute")
+        self.assertIn(
+            "0x7f123456 seems not appear in resourceIDs known",
+            log.output[0],
+        )
+        self.assertTrue(parser.packerwarning)
 
 if __name__ == '__main__':
     unittest.main()
